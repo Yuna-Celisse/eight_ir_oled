@@ -1,13 +1,13 @@
 #include "app_speech.h"
 
-//´®¿Ú½âÎö²¿·Ö 115200 ²¨ÌØÂÊ
+//ä¸²å£è§£æéƒ¨åˆ† 115200 æ³¢ç‰¹ç‡
 
-uint8_t recv_buf[5]={0}; //½ÓÊÕbuf Receive buf
+uint8_t recv_buf[5]={0}; //æ¥æ”¶buf Receive buf
 char cmd[5];
 uint8_t g_index = 0;
 
-uint8_t g_speech=0;//ÓïÒô±êÖ¾
-uint8_t g_speech_cmd=0xFF;//ÃüÁî±êÊ¶ 
+uint8_t g_speech=0;//è¯­éŸ³æ ‡å¿—
+uint8_t g_speech_cmd=0xFF;//å‘½ä»¤æ ‡è¯† 
 
 void Processing_Data(uint8_t RXdata)
 {
@@ -29,7 +29,7 @@ void Write_Data(uint8_t dat)
 	cmd[0] = 0xAA;
 	cmd[1] = 0x55;
 	cmd[2] = 0xFF;
-	cmd[3] = dat;  // Ö±½ÓÊ¹ÓÃ´«ÈëµÄÊı¾İ
+	cmd[3] = dat;  // ç›´æ¥ä½¿ç”¨ä¼ å…¥çš„æ•°æ®
 	cmd[4] = 0xFB;
 
 	for(int j = 0; j<5 ;j++)
@@ -60,7 +60,7 @@ void USER_Speech_Contorl_Car(void)
         default:break;
     }
     
-//    Write_Data(g_speech_cmd); //»á×Ô¶¯²¥±¨
+//    Write_Data(g_speech_cmd); //ä¼šè‡ªåŠ¨æ’­æŠ¥
     g_speech_cmd = 0xFF;
     g_speech = 0;
 }

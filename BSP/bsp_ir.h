@@ -3,9 +3,9 @@
 
 #include "AllHeader.h"
 
-/* 串口缓冲区的数据长度 */
+/* 涓插彛缂撳啿鍖虹殑鏁版嵁闀垮害 */
 #define USART_RECEIVE_LENGTH  200
-#define IR_Num 8 //探头数量
+#define IR_Num 8 //鎺㈠ご鏁伴噺
 
 extern volatile u8 IR_recv_complete_flag;
 extern u8 IR_Data_number[];

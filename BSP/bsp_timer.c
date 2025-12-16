@@ -1,26 +1,26 @@
 #include "bsp_timer.h"
 
 
-//20ms¶¨Ê±Æ÷
+//20mså®šæ—¶å™¨
 void Timer_20ms_Init(void)
 {
-    //´ò¿ª20ms¶¨Ê±Æ÷
+    //æ‰“å¼€20mså®šæ—¶å™¨
     NVIC_ClearPendingIRQ(TIMER_20ms_INST_INT_IRQN);
 	  NVIC_EnableIRQ(TIMER_20ms_INST_INT_IRQN);
 		DL_TimerA_startCounter(TIMER_20ms_INST);
 }
 
 u8 gled_cnt = 0;
-//20ms¶¨Ê±Æ÷ÖÐ¶Ï
+//20mså®šæ—¶å™¨ä¸­æ–­
 void TIMER_20ms_INST_IRQHandler(void)
 {
-    //20ms¹éÁãÖÐ¶Ï´¥·¢
+    //20mså½’é›¶ä¸­æ–­è§¦å‘
 	if( DL_TimerA_getPendingInterrupt(TIMER_20ms_INST) == DL_TIMER_IIDX_ZERO )
 	{
-		//±àÂëÆ÷¸üÐÂ
+		//ç¼–ç å™¨æ›´æ–°
 				IRDataAnalysis();
 				encoder_update();
-        Motion_Handle(); //Ð¡³µ²âËÙ
+        Motion_Handle(); //å°è½¦æµ‹é€Ÿ
         gled_cnt++;
         if(gled_cnt>=10)
         {

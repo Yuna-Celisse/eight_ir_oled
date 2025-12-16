@@ -1,10 +1,10 @@
 #include "app_ir_track.h"
 
 
-//Ñ²ÏßÌ½Í·µÄ´¦Àí
+//å·¡çº¿æŽ¢å¤´çš„å¤„ç†
 static void track_deal_four(u8 *s1,u8 *s2,u8 *s3,u8 *s4)
 {
-    //´Ó×óÍùÓÒ¿ªÊ¼
+    //ä»Žå·¦å¾€å³å¼€å§‹
 	*s1 = DL_GPIO_readPins(IR_Track_PORT, IR_Track_X2_PIN) > 0 ? 1 : 0;;
 	*s2 = DL_GPIO_readPins(IR_Track_PORT, IR_Track_X1_PIN) > 0 ? 1 : 0;;
 	*s3 = DL_GPIO_readPins(IR_Track_PORT, IR_Track_X3_PIN) > 0 ? 1 : 0;;
@@ -19,16 +19,16 @@ static void track_deal_four(u8 *s1,u8 *s2,u8 *s3,u8 *s4)
 
 int pid_output_IRR = 0;
 
-#define IRR_SPEED 			  250  //Ñ²ÏßËÙ¶È
-#define IRTrack_Minddle    0 //ÖÐ¼äµÄÖµ
+#define IRR_SPEED 			  250  //å·¡çº¿é€Ÿåº¦
+#define IRTrack_Minddle    0 //ä¸­é—´çš„å€¼
 
-//Ñ²Ïßpid
+//å·¡çº¿pid
 float  Track_PID(int8_t actual_value)
 {
     float IRTrackTurn = 0;
 	int8_t error;
 	static int8_t error_last=0;
-	static float IRTrack_Integral;//»ý·Ö
+	static float IRTrack_Integral;//ç§¯åˆ†
 	
 
 	error=actual_value-IRTrack_Minddle;
@@ -40,7 +40,7 @@ float  Track_PID(int8_t actual_value)
     else if(IRTrack_Integral<-100)
         IRTrack_Integral = -100;
 	
-	//	//Î»ÖÃÊ½pid
+	//	//ä½ç½®å¼pid
 	IRTrackTurn=error*IRTrack_Trun_KP
 							+IRTrack_Trun_KI*IRTrack_Integral
 							+(error - error_last)*IRTrack_Trun_KD;
@@ -60,7 +60,7 @@ void LineWalking(void)
 //    printf("%d\t%d\t%d\t%d\t \r\n",x1,x2,x3,x4);
     
     
-    //¼òµ¥Ñ²È¦ ÕâÀïÃ»Ìí¼ÓÖ±½Ç
+    //ç®€å•å·¡åœˆ è¿™é‡Œæ²¡æ·»åŠ ç›´è§’
     if(x1 == 1 && x2 == 1&& x3 ==1 && x4==0)
     {
         err = 3;

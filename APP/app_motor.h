@@ -5,16 +5,16 @@
 
 #include "AllHeader.h"
 
-// 45RPMµç»ú£¬ÂÖ×Ó×ªÒ»ÕûÈ¦£¬±àÂëÆ÷»ñµÃµÄÂö³åÊı=¼õËÙ±È*ÂëÅÌÏßÊı*±àÂëÆ÷Âö³å£¨45*13*2£©  È¡½üËÆÖµ
+// 45RPMç”µæœºï¼Œè½®å­è½¬ä¸€æ•´åœˆï¼Œç¼–ç å™¨è·å¾—çš„è„‰å†²æ•°=å‡é€Ÿæ¯”*ç ç›˜çº¿æ•°*ç¼–ç å™¨è„‰å†²ï¼ˆ45*13*2ï¼‰  å–è¿‘ä¼¼å€¼
 #define ENCODER_CIRCLE_450 (1170.0f)  
 
-// Half of the sum of the distances between the car chassis motors Ğ¡³µµ×ÅÌµç»ú¼ä¾àÖ®ºÍµÄÒ»°ë
+// Half of the sum of the distances between the car chassis motors å°è½¦åº•ç›˜ç”µæœºé—´è·ä¹‹å’Œçš„ä¸€åŠ
 #define MSPM0Car_APB (157.09f) //(143.8+170.38)/2
 
-// The displacement of a wheel in one complete revolution, measured in meters ÂÖ×Ó×ªÒ»ÕûÈ¦µÄÎ»ÒÆ£¬µ¥Î»ÎªºÁÃ×
+// The displacement of a wheel in one complete revolution, measured in meters è½®å­è½¬ä¸€æ•´åœˆçš„ä½ç§»ï¼Œå•ä½ä¸ºæ¯«ç±³
 #define MECANUM_CIRCLE_MM (210.486f)
 
-// Í£Ö¹Ä£Ê½£¬STOP_FREE±íÊ¾×ÔÓÉÍ£Ö¹£¬STOP_BRAKE±íÊ¾É²³µ¡£
+// åœæ­¢æ¨¡å¼ï¼ŒSTOP_FREEè¡¨ç¤ºè‡ªç”±åœæ­¢ï¼ŒSTOP_BRAKEè¡¨ç¤ºåˆ¹è½¦ã€‚
 //Stop mode, STOP_ FREE stands for free stop, STOP_ BRAKE stands for braking.
 typedef enum _stop_mode
 {

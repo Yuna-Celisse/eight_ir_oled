@@ -11,7 +11,7 @@ static int speed_R1_setup = 0;
 static int g_offset_yaw = 0;
 static uint16_t g_speed_setup = 0;
 
-// ±àÂëÆ÷20ºÁÃëÇ°ºóÊı¾İ
+// ç¼–ç å™¨20æ¯«ç§’å‰åæ•°æ®
 //Encoder data before and after 20 milliseconds
 int g_Encoder_All_Now[MAX_MOTOR] = {0};
 int g_Encoder_All_Last[MAX_MOTOR] = {0};
@@ -29,7 +29,7 @@ static float Motion_Get_Circle_Pulse(void)
     return ENCODER_CIRCLE_450;
 }
 
-// ½öÓÃÓÚÌí¼Óµ½µ÷ÊÔÖĞÏÔÊ¾Êı¾İ¡£
+// ä»…ç”¨äºæ·»åŠ åˆ°è°ƒè¯•ä¸­æ˜¾ç¤ºæ•°æ®ã€‚
 //Only used to display data when added to debugging.
 void *Motion_Get_Data(uint8_t index)
 {
@@ -42,7 +42,7 @@ void *Motion_Get_Data(uint8_t index)
     return 0;
 }
 
-// »ñÈ¡µç»úËÙ¶È
+// è·å–ç”µæœºé€Ÿåº¦
 //Obtain motor speed
 void Motion_Get_Motor_Speed(float *speed)
 {
@@ -52,7 +52,7 @@ void Motion_Get_Motor_Speed(float *speed)
     }
 }
 
-// ÉèÖÃÆ«º½½Ç×´Ì¬£¬Èç¹ûÊ¹ÄÜÔòË¢ĞÂtargetÄ¿±ê½Ç¶È¡£
+// è®¾ç½®åèˆªè§’çŠ¶æ€ï¼Œå¦‚æœä½¿èƒ½åˆ™åˆ·æ–°targetç›®æ ‡è§’åº¦ã€‚
 //Set the yaw angle status, and if enabled, refresh the target target angle.
 void Motion_Set_Yaw_Adjust(uint8_t adjust)
 {
@@ -66,11 +66,11 @@ void Motion_Set_Yaw_Adjust(uint8_t adjust)
     }
     if (g_yaw_adjust)
     {
-        // PID_Yaw_Reset(»ñÈ¡µ±Ç°IMUÆ«º½½Ç-yaw);
+        // PID_Yaw_Reset(è·å–å½“å‰IMUåèˆªè§’-yaw);
     }
 }
 
-// ·µ»ØÆ«º½½Çµ÷½Ú×´Ì¬¡£
+// è¿”å›åèˆªè§’è°ƒèŠ‚çŠ¶æ€ã€‚
 //Return to yaw angle adjustment status.
 uint8_t Motion_Get_Yaw_Adjust(void)
 {
@@ -78,7 +78,7 @@ uint8_t Motion_Get_Yaw_Adjust(void)
 }
 
 
-// Car Stop Ğ¡³µÍ£Ö¹
+// Car Stop å°è½¦åœæ­¢
 void Motion_Stop(uint8_t brake)
 {
     Motion_Set_Speed(0, 0);
@@ -88,7 +88,7 @@ void Motion_Stop(uint8_t brake)
     Motor_Stop(brake);
 }
 
-// speed_mX=[-1000, 1000], µ¥Î»Îª£ºmm/s
+// speed_mX=[-1000, 1000], å•ä½ä¸ºï¼šmm/s
 //speed_mX=[-1000,1000],Unit: mm/s
 void Motion_Set_Speed(int16_t speed_m1, int16_t speed_m2)
 {
@@ -104,7 +104,7 @@ void Motion_Set_Speed(int16_t speed_m1, int16_t speed_m2)
 
 
 
-// ´Ó±àÂëÆ÷¶ÁÈ¡µ±Ç°¸÷ÂÖ×ÓËÙ¶È£¬µ¥Î»mm/s
+// ä»ç¼–ç å™¨è¯»å–å½“å‰å„è½®å­é€Ÿåº¦ï¼Œå•ä½mm/s
 //Read the current speed of each wheel from the encoder, in mm/s
 void Motion_Get_Speed(car_data_t *car)
 {
@@ -116,7 +116,7 @@ void Motion_Get_Speed(car_data_t *car)
 
     Motion_Get_Encoder();
 
-    // ¼ÆËãÂÖ×ÓËÙ¶È£¬µ¥Î»mm/s¡£
+    // è®¡ç®—è½®å­é€Ÿåº¦ï¼Œå•ä½mm/sã€‚
     //Calculate the wheel speed in mm/s.
     for (i = 0; i <MAX_MOTOR ; i++)
     {
@@ -137,21 +137,21 @@ void Motion_Get_Speed(car_data_t *car)
     }
 }
 
-// ·µ»Øµ±Ç°Ğ¡³µÂÖ×ÓÖá¼ä¾àºÍµÄÒ»°ë
+// è¿”å›å½“å‰å°è½¦è½®å­è½´é—´è·å’Œçš„ä¸€åŠ
 //Returns half of the sum of the current wheel spacing of the small car
 float Motion_Get_APB(void)
 {
     return MSPM0Car_APB;
 }
 
-// ·µ»Øµ±Ç°Ğ¡³µÂÖ×Ó×ªÒ»È¦µÄ¶àÉÙºÁÃ×
+// è¿”å›å½“å‰å°è½¦è½®å­è½¬ä¸€åœˆçš„å¤šå°‘æ¯«ç±³
 //Returns the number of millimeters the current car wheel has rotated once
 float Motion_Get_Circle_MM(void)
 {
     return MECANUM_CIRCLE_MM;
 }
 
-// »ñÈ¡±àÂëÆ÷Êı¾İ£¬²¢¼ÆËãÆ«²îÂö³åÊı
+// è·å–ç¼–ç å™¨æ•°æ®ï¼Œå¹¶è®¡ç®—åå·®è„‰å†²æ•°
 //Obtain encoder data and calculate the number of deviation pulses
 void Motion_Get_Encoder(void)
 {
@@ -159,16 +159,16 @@ void Motion_Get_Encoder(void)
 
     for (uint8_t i = 0; i < MAX_MOTOR; i++)
     {
-        // ¼ÇÂ¼Á½´Î²âÊÔÊ±¼ä²îµÄÂö³åÊı
+        // è®°å½•ä¸¤æ¬¡æµ‹è¯•æ—¶é—´å·®çš„è„‰å†²æ•°
     	//Record the number of pulses between two test times
         g_Encoder_All_Offset[i] = g_Encoder_All_Now[i] - g_Encoder_All_Last[i];
-        // ¼ÇÂ¼ÉÏ´Î±àÂëÆ÷Êı¾İ
+        // è®°å½•ä¸Šæ¬¡ç¼–ç å™¨æ•°æ®
         //Record Last Encoder Data
         g_Encoder_All_Last[i] = g_Encoder_All_Now[i];
     }
 }
 
-// ¿ØÖÆĞ¡³µÔË¶¯
+// æ§åˆ¶å°è½¦è¿åŠ¨
 //Control the movement of the car
 void Motion_Ctrl(int16_t V_x, int16_t V_y, int16_t V_z)
 {
@@ -181,9 +181,9 @@ void Motion_Ctrl_State(uint8_t state, uint16_t speed, uint8_t adjust)
     wheel_State_YAW(state, input_speed, adjust);
 }
 
-// ¿ØÖÆĞ¡³µÔË¶¯×´Ì¬
-// ËÙ¶È¿ØÖÆ£ºspeed=0~1000¡£
-// Æ«º½½Çµ÷½ÚÔË¶¯£ºadjust=1¿ªÆô£¬=0²»¿ªÆô¡£
+// æ§åˆ¶å°è½¦è¿åŠ¨çŠ¶æ€
+// é€Ÿåº¦æ§åˆ¶ï¼šspeed=0~1000ã€‚
+// åèˆªè§’è°ƒèŠ‚è¿åŠ¨ï¼šadjust=1å¼€å¯ï¼Œ=0ä¸å¼€å¯ã€‚
 //Control the movement status of the car.
 //Speed control: speed=0-1000.
 //Yaw angle adjustment motion: adjust=1 on,=0 not on.
@@ -226,8 +226,8 @@ void wheel_State_YAW(uint8_t state, uint16_t speed, uint8_t adjust)
     }
 }
 
-// ¿ØÖÆĞ¡³µÔË¶¯×´Ì¬
-// ËÙ¶È¿ØÖÆ£ºspeed=0~1000¡£
+// æ§åˆ¶å°è½¦è¿åŠ¨çŠ¶æ€
+// é€Ÿåº¦æ§åˆ¶ï¼šspeed=0~1000ã€‚
 //Control the movement status of the car.
 //Speed control: speed=0-1000.
 void wheel_State(uint8_t state, uint16_t speed)
@@ -297,13 +297,13 @@ void wheel_Ctrl(int16_t V_x, int16_t V_y, int16_t V_z)
     
     
 //    printf("%d,%d\r\n",speed_L1_setup, speed_R1_setup);
-    //µ÷¼ÓpidµÄ¿ØÖÆ£¬·´Ó¦Âı¾ÍÖ±½Ópwm¿ØÖÆ
+    //è°ƒåŠ pidçš„æ§åˆ¶ï¼Œååº”æ…¢å°±ç›´æ¥pwmæ§åˆ¶
     Motion_Set_Speed(speed_L1_setup, speed_R1_setup); //pid
     
-//    PWM_Control_Car(speed_L1_setup,speed_R1_setup);//Ö±½Ópwm¿Ø
+//    PWM_Control_Car(speed_L1_setup,speed_R1_setup);//ç›´æ¥pwmæ§
 }
 
-// ÔË¶¯¿ØÖÆ¾ä±ú£¬Ã¿20msµ÷ÓÃÒ»´Î£¬Ö÷Òª´¦ÀíËÙ¶ÈÏà¹ØµÄÊı¾İ
+// è¿åŠ¨æ§åˆ¶å¥æŸ„ï¼Œæ¯20msè°ƒç”¨ä¸€æ¬¡ï¼Œä¸»è¦å¤„ç†é€Ÿåº¦ç›¸å…³çš„æ•°æ®
 //Motion control handle, called every 20ms, mainly processing speed related data
 extern PID_t pid_motor[2];
 void Motion_Handle(void)
@@ -313,7 +313,7 @@ void Motion_Handle(void)
 
     if (g_start_ctrl)
     {
-        //ÕâÑùĞ§¹û¸üºÃ
+        //è¿™æ ·æ•ˆæœæ›´å¥½
         if(motor_data.speed_set[0]==0)
         {
             motor_data.speed_pwm[0] = 0;

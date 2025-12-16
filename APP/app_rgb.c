@@ -1,16 +1,16 @@
 #include "app_rgb.h"
 
-//RGB¼òµ¥µÆĞ§
+//RGBç®€å•ç¯æ•ˆ
 
 
-//#define 	Red_RGB     '2'//°´¼üÇ° Before pressing the button
-//#define 	Green_RGB    '3'//°´¼üºó After pressing the button
-//#define 	Blue_RGB    '4'//°´¼ü×ó Left button
-////#define 	Yellow_RGB   '4'//°´¼üÓÒ Right button
-////#define 	Cyan_RGB    '5'//°´¼üÍ£ Button stop
-//#define 	OFF    '8'//°´¼üÍ£ Button stop
+//#define 	Red_RGB     '2'//æŒ‰é”®å‰ Before pressing the button
+//#define 	Green_RGB    '3'//æŒ‰é”®å After pressing the button
+//#define 	Blue_RGB    '4'//æŒ‰é”®å·¦ Left button
+////#define 	Yellow_RGB   '4'//æŒ‰é”®å³ Right button
+////#define 	Cyan_RGB    '5'//æŒ‰é”®åœ Button stop
+//#define 	OFF    '8'//æŒ‰é”®åœ Button stop
 
-extern uint8_t ProtocolString[80];//ÒıÈë±¸·İÊı¾İÇø Introducing backup data area
+extern uint8_t ProtocolString[80];//å¼•å…¥å¤‡ä»½æ•°æ®åŒº Introducing backup data area
 static void set_ALL_RGB_COLOR(unsigned long color)
 {
     rgb_SetColor(Left_RGB,color);
@@ -21,11 +21,11 @@ static void set_ALL_RGB_COLOR(unsigned long color)
 void app_color()
 {
 	
-		if (ProtocolString[8] == '2')      //Ğ¡³µ×óĞı Left rotation of the car
+		if (ProtocolString[8] == '2')      //å°è½¦å·¦æ—‹ Left rotation of the car
 	{
 		 Control_RGB_ALL(Red_RGB);
 	}
- else if (ProtocolString[8] == '3') //Ğ¡³µÓÒĞı Car turning right
+ else if (ProtocolString[8] == '3') //å°è½¦å³æ—‹ Car turning right
 	{
 		Control_RGB_ALL(Green_RGB);
 	}
@@ -60,7 +60,7 @@ void Control_RGB_ALL(RGB_Color_t color)
         
     }
     
-    rgb_SendArray();//±ØĞë·¢ËÍ,²ÅÏÔÊ¾
+    rgb_SendArray();//å¿…é¡»å‘é€,æ‰æ˜¾ç¤º
     delay_ms(200);
     
     

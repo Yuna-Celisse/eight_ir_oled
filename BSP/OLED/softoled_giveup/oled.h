@@ -15,7 +15,7 @@
 #define u32 uint32_t
 #endif
 
-//-----------------OLED¶Ë¿Ú¶¨Òå---------------- 
+//-----------------OLEDç«¯å£å®šä¹‰---------------- 
 
 #define OLED_SCL_Clr() DL_GPIO_clearPins(OLED_PORT,OLED_SCL_PIN)//SCL
 #define OLED_SCL_Set() DL_GPIO_setPins(OLED_PORT,OLED_SCL_PIN)
@@ -24,8 +24,8 @@
 #define OLED_SDA_Set() DL_GPIO_setPins(OLED_PORT,OLED_SDA_PIN)
 
 
-#define OLED_CMD  0	//Ğ´ÃüÁî
-#define OLED_DATA 1	//Ğ´Êı¾İ
+#define OLED_CMD  0	//å†™å‘½ä»¤
+#define OLED_DATA 1	//å†™æ•°æ®
 
 void OLED_ClearPoint(u8 x,u8 y);
 void OLED_ColorTurn(u8 i);

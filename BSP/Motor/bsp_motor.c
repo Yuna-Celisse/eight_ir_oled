@@ -8,7 +8,7 @@ void Init_Motor_PWM(void)
    	Motor_Stop(1);
 }
 
-//电机死区
+//鐢垫満姝诲尯
 static int16_t Motor_Ignore_Dead_Zone(int16_t pulse)
 {
     if (pulse > 0) return pulse + MOTOR_DEAD_ZONE;
@@ -16,7 +16,7 @@ static int16_t Motor_Ignore_Dead_Zone(int16_t pulse)
     return 0;
 }
 
-//速度限制
+//閫熷害闄愬埗
 int16_t speed_limit(int16_t speed,int16_t min,int16_t max)
 {
     if(speed == 0)
@@ -42,11 +42,11 @@ void PWM_Control_Car(int16_t L_motor_speed , int16_t R_motor_speed )
 {
     int16_t sl,sr;
     
-    //限制最大最小pwm输出
+    //闄愬埗鏈�澶ф渶灏弍wm杈撳嚭
     sl = speed_limit(L_motor_speed,-MAX_SPEED,MAX_SPEED);
     sr = speed_limit(R_motor_speed,-MAX_SPEED,MAX_SPEED);
     
-    //限制电机死区
+    //闄愬埗鐢垫満姝诲尯
     sl = Motor_Ignore_Dead_Zone(sl);
     sr = Motor_Ignore_Dead_Zone(sr);
     
@@ -75,10 +75,10 @@ void PWM_Control_Car(int16_t L_motor_speed , int16_t R_motor_speed )
 }
 
 
-//小车停止 参数刹车和不刹车
+//灏忚溅鍋滄 鍙傛暟鍒硅溅鍜屼笉鍒硅溅
 void Motor_Stop(uint8_t brake)
 {
-   if(brake == 1)//刹车
+   if(brake == 1)//鍒硅溅
    {
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_3_INDEX);
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_2_INDEX);
@@ -104,7 +104,7 @@ void Motor_Stop(uint8_t brake)
 
 
 //motor_speed 0-999
-//dir:0正转 1反转
+//dir:0姝ｈ浆 1鍙嶈浆
 
 void L1_control(uint16_t motor_speed,uint8_t dir)
 {
