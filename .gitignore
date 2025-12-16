@@ -1,0 +1,72 @@
+# Keil MDK specific files
+*.uvguix.*
+*.uvgui.*
+*.bak
+*.ddk
+*.edk
+*.lst
+*.lnp
+*.mpf
+*.mpj
+*.omf
+*.plg
+*.axf
+*.htm
+*.build_log.htm
+*.sct
+*.scvd
+*.uvguix
+*.dep
+
+# Object files and dependencies
+*.o
+*.d
+*.obj
+*.elf
+*.hex
+*.bin
+*.map
+*.crf
+*.dep
+
+# Keil output folders
+OBJ/
+Listings/
+DebugConfig/
+Objects/
+RTE/
+
+# Build outputs
+*.axf
+*.hex
+*.bin
+*.map
+*.lst
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.iex
+
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE specific
+.vscode/
+.idea/
+
+# Generated files that can be rebuilt
+device.cmd.genlibs
+device.lds.genlibs
+
+# Event recorder
+*.scvd
+EventRecorderStub.scvd
