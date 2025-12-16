@@ -2,13 +2,28 @@
 
 //RGB简单灯效
 
+// RGB功能需要额外的驱动文件支持
+// 如果没有RGB硬件或驱动，可以从项目中移除此文件
 
-//#define 	Red_RGB     '2'//按键前 Before pressing the button
-//#define 	Green_RGB    '3'//按键后 After pressing the button
-//#define 	Blue_RGB    '4'//按键左 Left button
-////#define 	Yellow_RGB   '4'//按键右 Right button
-////#define 	Cyan_RGB    '5'//按键停 Button stop
-//#define 	OFF    '8'//按键停 Button stop
+// 颜色定义（如果有RGB驱动，这些应该在驱动头文件中定义）
+#define RED     0xFF0000
+#define GREEN   0x00FF00
+#define BLUE    0x0000FF
+#define YELLOW  0xFFFF00
+#define PURPLE  0xFF00FF
+#define CYAN    0x00FFFF
+#define BLACK   0x000000
+
+// 弱函数声明 - 如果没有实际的RGB驱动，这些函数不会做任何事
+__attribute__((weak)) void rgb_SetColor(unsigned char LedId, unsigned long color) {
+    // 空实现，如果没有RGB驱动
+    (void)LedId;
+    (void)color;
+}
+
+__attribute__((weak)) void rgb_SendArray(void) {
+    // 空实现，如果没有RGB驱动
+}
 
 extern uint8_t ProtocolString[80];//引入备份数据区 Introducing backup data area
 static void set_ALL_RGB_COLOR(unsigned long color)

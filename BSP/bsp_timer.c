@@ -1,5 +1,8 @@
 #include "bsp_timer.h"
 
+// 外部变量声明
+extern volatile uint32_t run_time_ms;
+extern uint8_t system_state;
 
 //20ms定时器
 void Timer_20ms_Init(void)
@@ -21,6 +24,12 @@ void TIMER_20ms_INST_IRQHandler(void)
 				IRDataAnalysis();
 				encoder_update();
         Motion_Handle(); //小车测速
+        
+        // 系统运行时累计时间 (STATE_RUNNING = 1)
+        if(system_state == 1) {
+            run_time_ms += 20;  // 每次中断增加20ms
+        }
+        
         gled_cnt++;
         if(gled_cnt>=10)
         {
