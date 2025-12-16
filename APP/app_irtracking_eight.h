@@ -14,6 +14,7 @@
 
 void LineWalking(void);
 int LineCheck(void);
+u8 TurnControl(u8 x1, u8 x2, u8 x7, u8 x8);
 
 #endif
 
