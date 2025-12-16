@@ -1,27 +1,28 @@
 #include "AllHeader.h"
 
 // 全局变量定义
-void KEY_Init(void);
-uint8_t KEY_IsPressed(void);
 void Beep_Times(uint8_t times);
 void Display_Time(void);
+void Display_Countdown(uint8_t seconds);
 void Check_Wide_Line(void);
 void RGB_Running_Effect(void);
 
 // 系统状态变量
 typedef enum {
-    STATE_WAIT_START,    // 等待按键启动
+    STATE_COUNTDOWN,     // 倒计时等待启动
     STATE_RUNNING,       // 运行中
     STATE_FINISHED       // 已完成
 } SystemState_t;
 
-SystemState_t system_state = STATE_WAIT_START;
+SystemState_t system_state = STATE_COUNTDOWN;
 volatile uint32_t run_time_ms = 0;      // 运行时间(毫秒)
 volatile uint8_t beep_point_count = 0;  // 蜂鸣器点位计数
 volatile bool is_on_wide_line = false;  // 是否在宽线上
 volatile bool wide_line_detected = false; // 宽线检测标志
 volatile uint8_t wide_line_type = 0;    // 宽线类型: 1=起点, 2=蜂鸣器点, 3=终点
 volatile uint32_t rgb_effect_counter = 0;
+volatile uint32_t countdown_ms = 0;     // 倒计时(毫秒)
+uint8_t countdown_seconds = 3;          // 倒计时秒数（可修改：3秒/5秒/10秒）
 
 int main(void)
 {
@@ -35,17 +36,17 @@ int main(void)
 	Init_Motor_PWM();
    //初始化电机编码器
   encoder_init(); 
-//  电机控速pid初始化
+//  电机控速pid2初始化
   PID_Param_Init();
-  
-  // 按键初始化
-  KEY_Init();
   
   // 初始显示
   OLED_Clear();
   OLED_ShowString(0, 0, "Smart Car Race", 8, 1);
-  OLED_ShowString(0, 16, "Press KEY Start", 8, 1);
+  OLED_ShowString(0, 16, "Auto Start in:", 8, 1);
   OLED_Refresh();
+  
+  // 初始化倒计时
+  countdown_ms = countdown_seconds * 1000;
 
 	uart0_send_string("$0,0,1#");
 	
@@ -53,18 +54,18 @@ int main(void)
 	{
 		// 状态机处理
 		switch(system_state) {
-			case STATE_WAIT_START:
-				// 等待按键启动
-				if(KEY_IsPressed()) {
-					delay_ms(50);  // 消抖
-					if(KEY_IsPressed()) {
-						system_state = STATE_RUNNING;
-						run_time_ms = 0;
-						beep_point_count = 0;
-						OLED_Clear();
-						Beep_Times(1);  // 启动提示音
-						while(KEY_IsPressed());  // 等待按键释放
-					}
+			case STATE_COUNTDOWN:
+				// 倒计时显示
+				Display_Countdown((countdown_ms + 999) / 1000);  // 向上取整显示秒数
+				
+				// 倒计时结束，自动启动
+				if(countdown_ms == 0) {
+					system_state = STATE_RUNNING;
+					run_time_ms = 0;
+					beep_point_count = 0;
+					OLED_Clear();
+					Beep_Times(2);  // 启动提示音（响2次）
+					delay_ms(200);  // 短暂延时
 				}
 				break;
 				
@@ -101,18 +102,18 @@ int main(void)
 
 }
 
-// 按键初始化（需要在syscfg中配置GPIO）
-void KEY_Init(void) {
-    // 假设使用PA18作为按键引脚，上拉输入
-    // 实际引脚需要根据硬件配置
-}
-
-// 检测按键是否按下（低电平有效）
-uint8_t KEY_IsPressed(void) {
-    // 假设使用GPIOA的某个引脚
-    // 需要根据实际硬件配置修改
-    // 这里使用一个示例实现
-    return (DL_GPIO_readPins(GPIOA, DL_GPIO_PIN_18) == 0);
+// 显示倒计时
+void Display_Countdown(uint8_t seconds) {
+    OLED_ShowString(0, 32, "    ", 8, 1);  // 清除之前的数字区域
+    OLED_ShowNum(48, 32, seconds, 2, 8, 1);
+    OLED_ShowString(72, 32, "s", 8, 1);
+    
+    // 添加提示信息
+    if(seconds > 0) {
+        OLED_ShowString(0, 48, "Waiting...", 8, 1);
+    } else {
+        OLED_ShowString(0, 48, "GO! GO! GO!", 8, 1);
+    }
 }
 
 // 蜂鸣器响N次

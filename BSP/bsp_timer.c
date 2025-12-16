@@ -2,6 +2,7 @@
 
 // 外部变量声明
 extern volatile uint32_t run_time_ms;
+extern volatile uint32_t countdown_ms;
 extern uint8_t system_state;
 
 //20ms定时器
@@ -24,6 +25,15 @@ void TIMER_20ms_INST_IRQHandler(void)
 				IRDataAnalysis();
 				encoder_update();
         Motion_Handle(); //小车测速
+        
+        // 倒计时处理 (STATE_COUNTDOWN = 0)
+        if(system_state == 0) {
+            if(countdown_ms >= 20) {
+                countdown_ms -= 20;  // 每次中断减少20ms
+            } else {
+                countdown_ms = 0;
+            }
+        }
         
         // 系统运行时累计时间 (STATE_RUNNING = 1)
         if(system_state == 1) {
