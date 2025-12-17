@@ -14,7 +14,7 @@
 
 // 新增：陀螺仪增稳相关定义
 // 如果代码大小超限，可以设置为0禁用MPU6050增稳功能
-#define YAW_COMPENSATION_ENABLE  1  // 1=启用yaw补偿，0=禁用
+#define YAW_COMPENSATION_ENABLE  0  // 1=启用yaw补偿，0=禁用
 #define YAW_KP  2.0f                // yaw角P系数
 #define YAW_KD  4.0f                // yaw角D系数
 
