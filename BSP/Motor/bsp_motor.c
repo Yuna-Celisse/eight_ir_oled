@@ -111,7 +111,7 @@ void L1_control(uint16_t motor_speed,uint8_t dir)
 	if(dir)
 	{
       DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_2_INDEX);
+	    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_2_INDEX);
 			
 			
 	}
