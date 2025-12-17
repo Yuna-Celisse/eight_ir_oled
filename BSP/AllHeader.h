@@ -27,6 +27,12 @@
 #include "bsp_PID_motor.h"
 #include "app_irtracking_eight.h"
 
+// MPU6050相关头文件
+#include "bsp_mpu6050.h"
+#include "get_mpu6050.h"
+#include "inv_mpu.h"
+#include "inv_mpu_dmp_motion_driver.h"
+#include "Filter.h"
 
 #endif
 

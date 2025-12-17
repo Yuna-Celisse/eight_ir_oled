@@ -39,10 +39,15 @@ int main(void)
 //  电机控速pid2初始化
   PID_Param_Init();
   
+  // === 新增：初始化MPU6050陀螺仪 ===
+  #if YAW_COMPENSATION_ENABLE
+  IRTracking_MPU_Init();
+  #endif
+  
   // 初始显示
   OLED_Clear();
   OLED_ShowString(0, 0, "Smart Car Race", 8, 1);
-  OLED_ShowString(0, 16, "Auto Start in:", 8, 1);
+  OLED_ShowString(0, 16, "Start in:", 8, 1);
   OLED_Refresh();
   
   // 初始化倒计时
@@ -82,19 +87,25 @@ int main(void)
 				// 显示运行时间和状态
 				Display_Time();
 				
-				// 显示红外传感器数据
-				if(IR_recv_complete_flag) {    
-					OLED_ShowString(0, 40, "IR:", 8, 1);
-					for (int i = 0; i < 8; i++) 
-						OLED_ShowNum(20 + i * 10, 40, IR_Data_number[i], 1, 8, 1);        
-				}
-				break;
-				
-			case STATE_FINISHED:
-				// 停车状态
-				Motion_Ctrl(0, 0, 0);  // 停止电机
-				OLED_ShowString(0, 48, "FINISHED!", 8, 1);
-				break;
+// 显示yaw角
+			#if YAW_COMPENSATION_ENABLE
+			extern volatile float Filter_out;
+			OLED_ShowString(0, 32, "Yaw:", 8, 1);
+			OLED_ShowNum(32, 32, (int)Filter_out, 4, 8, 1);
+			#endif
+			
+			// 显示传感器数据
+			if(IR_recv_complete_flag) {
+				for (int i = 0; i < 8; i++) 
+					OLED_ShowNum(10 + i * 10, 48, IR_Data_number[i], 1, 8, 1);
+			}
+			break;
+			
+		case STATE_FINISHED:
+			// 停车状态
+			Motion_Ctrl(0, 0, 0);
+			OLED_ShowString(0, 56, "FINISH!", 8, 1);
+			break;
 		}
 		
 		OLED_Refresh();
@@ -104,15 +115,13 @@ int main(void)
 
 // 显示倒计时
 void Display_Countdown(uint8_t seconds) {
-    OLED_ShowString(0, 32, "    ", 8, 1);  // 清除之前的数字区域
     OLED_ShowNum(48, 32, seconds, 2, 8, 1);
     OLED_ShowString(72, 32, "s", 8, 1);
     
-    // 添加提示信息
     if(seconds > 0) {
-        OLED_ShowString(0, 48, "Waiting...", 8, 1);
+        OLED_ShowString(0, 48, "Ready...", 8, 1);
     } else {
-        OLED_ShowString(0, 48, "GO! GO! GO!", 8, 1);
+        OLED_ShowString(0, 48, "GO!", 8, 1);
     }
 }
 
@@ -131,17 +140,15 @@ void Beep_Times(uint8_t times) {
 // 显示运行时间
 void Display_Time(void) {
     uint32_t seconds = run_time_ms / 1000;
-    uint32_t milliseconds = run_time_ms % 1000;
-    uint32_t centiseconds = milliseconds / 10;  // 厘秒(0.01秒)
+    uint32_t centiseconds = (run_time_ms % 1000) / 10;
     
-    OLED_ShowString(0, 0, "Time:", 8, 1);
-    OLED_ShowNum(40, 0, seconds, 3, 8, 1);
-    OLED_ShowString(64, 0, ".", 8, 1);
-    OLED_ShowNum(72, 0, centiseconds, 2, 8, 1);
-    OLED_ShowString(96, 0, "s", 8, 1);
+    OLED_ShowString(0, 0, "T:", 8, 1);
+    OLED_ShowNum(16, 0, seconds, 2, 8, 1);
+    OLED_ShowString(40, 0, ".", 8, 1);
+    OLED_ShowNum(48, 0, centiseconds, 2, 8, 1);
     
-    OLED_ShowString(0, 16, "Beep:", 8, 1);
-    OLED_ShowNum(40, 16, beep_point_count, 1, 8, 1);
+    OLED_ShowString(0, 16, "B:", 8, 1);
+    OLED_ShowNum(16, 16, beep_point_count, 1, 8, 1);
 }
 
 // 检测宽线（20cm宽度）
