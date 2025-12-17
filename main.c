@@ -170,8 +170,8 @@ void Check_Wide_Line(void) {
                 is_on_wide_line = true;
                 beep_point_count++;
                 
-                // 判断是否为终点（第4个蜂鸣器点后的宽线）
-                if(beep_point_count >= 5) {  // A B B B C C C B D，第5个宽线是终点
+                // 判断是否为终点（第9个宽线是终点D）
+                if(beep_point_count >= 9) {  // A B B B C C C B D，第9个宽线是终点
                     system_state = STATE_FINISHED;
                     Beep_Times(2);  // 终点提示音
                 } else if(beep_point_count == 2 || beep_point_count == 3 || beep_point_count == 4 || beep_point_count == 8) {
