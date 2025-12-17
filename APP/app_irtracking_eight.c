@@ -2,7 +2,7 @@
 
 #define IRTrack_Trun_KP (200)
 #define IRTrack_Trun_KI (0.02) 
-#define IRTrack_Trun_KD (0) 
+#define IRTrack_Trun_KD (50) 
 
 int pid_output_IRR = 0;
 u8 trun_flag = 0;
@@ -11,8 +11,14 @@ u8 trun_flag = 0;
 static int16_t last_speed_L = 0;
 static int16_t last_speed_R = 0;
 
-#define IRR_SPEED 			 200  //巡线速度	Line patrol speed
-#define TURN_SPEED            300  //转弯速度 Turn speed
+// 转弯状态标志：0=正常巡线，1=左转中，2=右转中
+static u8 turning_state = 0;
+// 全白检测计数器，避免误触发（需要连续检测到才判定为真正转弯）
+static u8 all_white_counter = 0;
+#define ALL_WHITE_THRESHOLD 4  // 连续检测10次全白才判定为转弯
+
+#define IRR_SPEED 			 450  //巡线速度	Line patrol speed
+#define TURN_SPEED            550  //转弯速度 Turn speed
 
 // 转弯控制函数 Turn control function
 // 返回值：1表示正在转弯，0表示不需要转弯
@@ -155,26 +161,69 @@ void LineWalking(void)
 	
 	deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 	
-	//优先处理转弯 Priority: handle turns first
-	if(TurnControl_read(x1, x2, x3, x4, x5, x6, x7, x8) == 8)
+	// 检测是否全白（所有传感器都为1）
+	u8 all_white = (TurnControl_read(x1, x2, x3, x4, x5, x6, x7, x8) == 8);
+	
+	// 如果当前处于转弯状态
+	if(turning_state != 0)
 	{
-		// 根据上一时刻的电机速度判断转向
-		if(last_speed_L > last_speed_R)
+		// 检查是否转到中心位置（中间传感器检测到线）
+		if(x4 == 0 || x5 == 0)  // 中心传感器检测到黑线
 		{
-			// 向右转弯：左电机速度保持不变正转，右电机保持原来的速度反转
-			Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);
-		}
-		else if(last_speed_L < last_speed_R)
-		{
-			// 向左转弯：右电机速度保持不变正转，左电机保持原来的速度反转
-			Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);
+			// 转到中心位置，退出转弯状态
+			turning_state = 0;
+			all_white_counter = 0;  // 重置计数器
 		}
 		else
 		{
-			// 速度相等，保持直行状态
-			Motion_Set_Speed(IRR_SPEED, IRR_SPEED);
+			// 继续转弯
+			if(turning_state == 1)  // 左转
+			{
+				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);
+			}
+			else if(turning_state == 2)  // 右转
+			{
+				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);
+			}
+			return; // 转弯中，直接返回
 		}
-		return; // 正在转弯，直接返回 Turning, return directly
+	}
+	
+	// 处理全白检测（可能是转弯或传感器切换）
+	if(all_white)
+	{
+		all_white_counter++;
+		
+		// 连续检测到全白达到阈值，判定为真正的转弯
+		if(all_white_counter >= ALL_WHITE_THRESHOLD)
+		{
+			// 根据上一时刻的电机速度判断转向
+			if(last_speed_L > last_speed_R)
+			{
+				// 向右转弯：左轮正转，右轮反转
+				turning_state = 2;
+				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);
+			}
+			else if(last_speed_L < last_speed_R)
+			{
+				// 向左转弯：左轮反转，右轮正转
+				turning_state = 1;
+				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);
+			}
+			else
+			{
+				// 速度相等，保持直行状态（不太可能出现）
+				Motion_Set_Speed(IRR_SPEED, IRR_SPEED);
+			}
+			return; // 正在转弯，直接返回
+		}
+		// 未达到阈值，保持当前状态继续前进
+		return;
+	}
+	else
+	{
+		// 不是全白，重置计数器
+		all_white_counter = 0;
 	}
 		
 	if(x3 == 0 &&  x4 == 0  && x5 == 0 && 6 == 0 ) //俩边都亮，直跑	Both sides are bright, run straight
@@ -220,10 +269,14 @@ void LineWalking(void)
 	{
 		err = -40;  // L2触发更大修正
 	}
-	// else if(x1 == 0 && x2 == 0  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 0011 1111
-	// {
-	// 	err = -50;  // L1触发更大修正
-	// }
+	else if(x1 == 0 && x2 == 0  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 0011 1111
+	{
+		err = -50;  // L1触发大偏航修正
+	}
+	else if(x1 == 0 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 0111 1111
+	{
+		err = -60;  // L1单独触发，极大偏航修正
+	}
 
 	// else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 0 && x6 == 1  && x7 == 1 && x8 == 1) // 1111 0111
 	// {
@@ -241,10 +294,14 @@ void LineWalking(void)
 	{
 		err = 40;  // L7触发更大修正
 	}
-	// else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0) // 1111 1100
-	// {
-	// 	err = 50;  // L7触发更大修正
-	// }
+	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0) // 1111 1100
+	{
+		err = 50;  // R8触发大偏航修正
+	}
+	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 0) // 1111 1110
+	{
+		err = 60;  // R8单独触发，极大偏航修正
+	}
 	
  
 	else if(x1 == 1 &&x2 == 1 &&x3 == 1 && (x4 == 0 || x5 == 0) && x6 == 1 && x7 == 1&& x8 == 1) //直走	Go straight
