@@ -80,15 +80,6 @@ extern "C" {
 #define GPIO_HFXOUT_IOMUX                                        (IOMUX_PINCM11)
 #define CPUCLK_FREQ                                                     80000000
 
-/* Port definition for Pin Group MPU6050 */
-#define MPU6050_PORT                                                     (GPIOA)
-/* Defines for SCL1 */
-#define MPU6050_SCL_PIN                                          (DL_GPIO_PIN_1)
-#define MPU6050_SCL_IOMUX                                         (IOMUX_PINCM2)
-/* Defines for SDA1 */
-#define MPU6050_SDA_PIN                                          (DL_GPIO_PIN_0)
-#define MPU6050_SDA_IOMUX                                         (IOMUX_PINCM1)
-
 /* Defines for motor_PWM */
 #define motor_PWM_INST                                                     TIMA0
 #define motor_PWM_INST_IRQHandler                               TIMA0_IRQHandler

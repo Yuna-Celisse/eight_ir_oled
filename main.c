@@ -39,11 +39,6 @@ int main(void)
 //  电机控速pid2初始化
   PID_Param_Init();
   
-  // === 新增：初始化MPU6050陀螺仪 ===
-  #if YAW_COMPENSATION_ENABLE
-  IRTracking_MPU_Init();
-  #endif
-  
   // 初始显示
   OLED_Clear();
   OLED_ShowString(0, 0, "Smart Car Race", 8, 1);

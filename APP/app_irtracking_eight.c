@@ -20,65 +20,6 @@ static u8 all_white_counter = 0;
 #define IRR_SPEED 			 450  //巡线速度	Line patrol speed
 #define TURN_SPEED            550  //转弯速度 Turn speed
 
-// === 新增：陀螺仪增稳相关变量 ===
-static float target_yaw = 0;         // 目标航向角
-static float last_yaw_error = 0;     // 上次yaw误差
-uint8_t yaw_initialized = 0;         // yaw初始化标志（全局，供main.c访问）
-extern volatile float yaw;            // 来自get_mpu6050.c的全局yaw角
-extern volatile float Filter_out;    // 滤波后的yaw角
-
-// === 新增：MPU6050初始化函数 ===
-void IRTracking_MPU_Init(void)
-{
-    // 初始化MPU6050
-    if(MPU6050_Init() == 0)
-    {
-        delay_ms(100);
-        
-        // 初始化DMP
-        if(mpu_dmp_init() == 0)
-        {
-            delay_ms(100);
-            
-            // 等待稳定并记录初始航向角
-            for(int i = 0; i < 50; i++)
-            {
-                Get_EulerAngles();
-                delay_ms(20);
-            }
-            
-            // 记录当前yaw角作为目标航向
-            target_yaw = Filter_out;
-            yaw_initialized = 1;
-        }
-    }
-}
-
-// === 新增：获取yaw角补偿值（PD控制）===
-float Get_Yaw_Compensation(void)
-{
-    if(!yaw_initialized || !YAW_COMPENSATION_ENABLE)
-        return 0;
-    
-    // 更新yaw角
-    Get_EulerAngles();
-    
-    // 计算yaw误差（小圆弧算法）
-    float yaw_error = get_minor_arc(target_yaw, Filter_out);
-    
-    // PD控制计算补偿值
-    float yaw_compensation = YAW_KP * yaw_error + 
-                             YAW_KD * (yaw_error - last_yaw_error);
-    
-    last_yaw_error = yaw_error;
-    
-    // 限幅
-    if(yaw_compensation > 300) yaw_compensation = 300;
-    if(yaw_compensation < -300) yaw_compensation = -300;
-    
-    return yaw_compensation;
-}
-
 // 转弯控制函数 Turn control function
 // 返回值：1表示正在转弯，0表示不需要转弯
 u8 TurnControl_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
@@ -374,10 +315,6 @@ void LineWalking(void)
 	
 	//剩下的就保持上一个状态	The rest will remain in the previous state
 	pid_output_IRR = (int)(APP_IR_PID_Calc(err));
-
-	// === 新增：加入yaw角补偿 ===
-	float yaw_compensation = Get_Yaw_Compensation();
-	pid_output_IRR += (int)yaw_compensation;
 	
 	// 限幅
 	if(pid_output_IRR > (MAX_SPEED - MOTOR_DEAD_ZONE))
