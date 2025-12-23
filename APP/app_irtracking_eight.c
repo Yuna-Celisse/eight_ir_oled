@@ -1,8 +1,8 @@
 #include "app_irtracking_eight.h"
 
-#define IRTrack_Trun_KP (275)
-#define IRTrack_Trun_KI (0.02) 
-#define IRTrack_Trun_KD (80) 
+#define IRTrack_Trun_KP (4)
+#define IRTrack_Trun_KI (0) 
+#define IRTrack_Trun_KD (1.5) 
 
 int pid_output_IRR = 0;
 u8 trun_flag = 0;
@@ -22,8 +22,8 @@ static u8 pre_state_timeout = 0;
 static u8 all_white_counter = 0;
 #define ALL_WHITE_THRESHOLD 1  // 只需检测1次全白就判定为转弯
 
-#define IRR_SPEED 			 450  //巡线速度	Line patrol speed
-#define TURN_SPEED            500  //转弯速度（原地转向）
+#define IRR_SPEED 			 3000  //巡线速度	Line patrol speed
+#define TURN_SPEED            1500  //转弯速度（原地转向）
 
 // 转弯控制函数 Turn control function
 // 返回值：1表示正在转弯，0表示不需要转弯
@@ -33,24 +33,10 @@ u8 TurnControl_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 	turn_direact = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8;
 	return turn_direact;
 }
-u8 TurnControl_read_left(u8 x1, u8 x2, u8 x3, u8 x4)
-{
-	int turn_direact_left = 0;
-	turn_direact_left = x1 + x2 + x3 + x4;
-	return turn_direact_left;
-}
-
-u8 TurnControl_read_right(u8 x5, u8 x6, u8 x7, u8 x8)
-{
-	int turn_direact_right = 0;
-	turn_direact_right = x5 + x6 + x7 + x8;
-	return turn_direact_right;
-}
-
 int16_t track_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
 	int16_t err;
-	err = 750*x1 + 150*x2 + 50*x3 + 10*x4 - 10*x5 - 50*x6 - 150*x7 - 750*x8;
+	err = 750*x1 + 400*x2 + 100*x3 - 100*x6 - 400*x7 - 750*x8;
 	return err;
 }
 
@@ -78,14 +64,8 @@ float APP_IR_PID_Calc(int16_t actual_value)
 			IRTrackTurn = (MOTOR_DEAD_ZONE - MAX_SPEED);
 	return IRTrackTurn;
 }
-
- 
- 
-
 void deal_IRdata(u8 *x1,u8 *x2,u8 *x3,u8 *x4,u8 *x5,u8 *x6,u8 *x7,u8 *x8)
 {
-
-	
 *x1 = IR_Data_number[0];
 *x2 = IR_Data_number[1];
 *x3 = IR_Data_number[2];
@@ -115,15 +95,15 @@ void LineWalking(void)
 	u8 right_white = ((x6==1 || x7==1 || x8==1) && (x6+x7+x8 >= 2) && x1==0 && x2==0);
 	
 	// 预检测状态超时处理
-	if(turn_pre_state != 0)
-	{
-		pre_state_timeout++;
-		if(pre_state_timeout > PRE_STATE_TIMEOUT_MAX)
-		{
-			turn_pre_state = 0;  // 超时清零
-			pre_state_timeout = 0;
-		}
-	}
+	// if(turn_pre_state != 0)
+	// {
+	// 	pre_state_timeout++;
+	// 	if(pre_state_timeout > PRE_STATE_TIMEOUT_MAX)
+	// 	{
+	// 		turn_pre_state = 0;  // 超时清零
+	// 		pre_state_timeout = 0;
+	// 	}
+	// }
 	
 	// 如果当前处于转弯状态
 	if(turning_state != 0)

@@ -90,16 +90,16 @@ int main(void)
 			#endif
 			
 			// 显示传感器数据
-			if(IR_recv_complete_flag) {
-				for (int i = 0; i < 8; i++) 
-					OLED_ShowNum(10 + i * 10, 48, IR_Data_number[i], 1, 8, 1);
-			}
+			// if(IR_recv_complete_flag) {
+			// 	for (int i = 0; i < 8; i++) 
+			// 		OLED_ShowNum(10 + i * 10, 48, IR_Data_number[i], 1, 8, 1);
+			// }
 			break;
 			
 		case STATE_FINISHED:
 			// 停车状态
 			Motion_Ctrl(0, 0, 0);
-			OLED_ShowString(0, 56, "FINISH!", 8, 1);
+			//OLED_ShowString(0, 56, "FINISH!", 8, 1);
 			break;
 		}
 		
@@ -110,13 +110,13 @@ int main(void)
 
 // 显示倒计时
 void Display_Countdown(uint8_t seconds) {
-    OLED_ShowNum(48, 32, seconds, 2, 8, 1);
-    OLED_ShowString(72, 32, "s", 8, 1);
+    //OLED_ShowNum(48, 32, seconds, 2, 8, 1);
+    //OLED_ShowString(72, 32, "s", 8, 1);
     
     if(seconds > 0) {
-        OLED_ShowString(0, 48, "Ready...", 8, 1);
+        //OLED_ShowString(0, 48, "Ready...", 8, 1);
     } else {
-        OLED_ShowString(0, 48, "GO!", 8, 1);
+        //OLED_ShowString(0, 48, "GO!", 8, 1);
     }
 }
 
@@ -137,13 +137,13 @@ void Display_Time(void) {
     uint32_t seconds = run_time_ms / 1000;
     uint32_t centiseconds = (run_time_ms % 1000) / 10;
     
-    OLED_ShowString(0, 0, "T:", 8, 1);
-    OLED_ShowNum(16, 0, seconds, 2, 8, 1);
-    OLED_ShowString(40, 0, ".", 8, 1);
-    OLED_ShowNum(48, 0, centiseconds, 2, 8, 1);
+    // OLED_ShowString(0, 0, "T:", 8, 1);
+    // OLED_ShowNum(16, 0, seconds, 2, 8, 1);
+    // OLED_ShowString(40, 0, ".", 8, 1);
+    // OLED_ShowNum(48, 0, centiseconds, 2, 8, 1);
     
-    OLED_ShowString(0, 16, "B:", 8, 1);
-    OLED_ShowNum(16, 16, beep_point_count, 1, 8, 1);
+    // OLED_ShowString(0, 16, "B:", 8, 1);
+    // OLED_ShowNum(16, 16, beep_point_count, 1, 8, 1);
 }
 
 // 检测宽线（20cm宽度）

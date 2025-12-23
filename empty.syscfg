@@ -1,9 +1,9 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "MSPM0G350X" --part "Default" --package "LQFP-64(PM)" --product "mspm0_sdk@2.02.00.05"
- * @v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)" --product "mspm0_sdk@2.02.00.05"
- * @versions {"tool":"1.21.1+3772"}
+ * @cliArgs --device "MSPM0G350X" --part "Default" --package "LQFP-64(PM)" --product "mspm0_sdk@2.08.00.03"
+ * @v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)" --product "mspm0_sdk@2.08.00.03"
+ * @versions {"tool":"1.25.0+4268"}
  */
 
 /**
@@ -117,10 +117,7 @@ GPIO5.associatedPins[1].interruptPriority = "0";
 PWM1.$name                              = "motor_PWM";
 PWM1.clockDivider                       = 2;
 PWM1.ccIndex                            = [0,1,2,3];
-PWM1.peripheral.ccp0Pin.$assign         = "PB8";
-PWM1.peripheral.ccp1Pin.$assign         = "PB12";
-PWM1.peripheral.ccp2Pin.$assign         = "PA3";
-PWM1.peripheral.ccp3Pin.$assign         = "PB2";
+PWM1.timerCount                         = 10000;
 PWM1.PWM_CHANNEL_0.$name                = "ti_driverlib_pwm_PWMTimerCC0";
 PWM1.PWM_CHANNEL_1.$name                = "ti_driverlib_pwm_PWMTimerCC1";
 PWM1.ccp0PinConfig.direction            = scripting.forceWrite("OUTPUT");
@@ -133,6 +130,10 @@ PWM1.ccp1PinConfig.hideOutputInversion  = scripting.forceWrite(false);
 PWM1.ccp1PinConfig.onlyInternalResistor = scripting.forceWrite(false);
 PWM1.ccp1PinConfig.passedPeripheralType = scripting.forceWrite("Digital");
 PWM1.ccp1PinConfig.$name                = "ti_driverlib_gpio_GPIOPinGeneric3";
+PWM1.peripheral.ccp0Pin.$assign         = "PB8";
+PWM1.peripheral.ccp1Pin.$assign         = "PB12";
+PWM1.peripheral.ccp2Pin.$assign         = "PA3";
+PWM1.peripheral.ccp3Pin.$assign         = "PB2";
 PWM1.PWM_CHANNEL_2.$name                = "ti_driverlib_pwm_PWMTimerCC2";
 PWM1.PWM_CHANNEL_3.$name                = "ti_driverlib_pwm_PWMTimerCC3";
 PWM1.ccp2PinConfig.$name                = "ti_driverlib_gpio_GPIOPinGeneric4";
