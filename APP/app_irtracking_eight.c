@@ -1,8 +1,8 @@
 #include "app_irtracking_eight.h"
 
-#define IRTrack_Trun_KP (200)
+#define IRTrack_Trun_KP (275)
 #define IRTrack_Trun_KI (0.02) 
-#define IRTrack_Trun_KD (50) 
+#define IRTrack_Trun_KD (80) 
 
 int pid_output_IRR = 0;
 u8 trun_flag = 0;
@@ -13,67 +13,28 @@ static int16_t last_speed_R = 0;
 
 // 转弯状态标志：0=正常巡线，1=左转中，2=右转中
 static u8 turning_state = 0;
-// 全白检测计数器，避免误触发（需要连续检测到才判定为真正转弯）
+// 转弯预检测标志：0=无，1=检测到左侧黑，2=检测到右侧黑
+static u8 turn_pre_state = 0;
+// 预检测超时计数器，防止预检测状态保持过久
+static u8 pre_state_timeout = 0;
+#define PRE_STATE_TIMEOUT_MAX 50  // 预检测状态最多保持次数
+// 全白检测计数器
 static u8 all_white_counter = 0;
-#define ALL_WHITE_THRESHOLD 5  // 连续检测10次全白才判定为转弯
+#define ALL_WHITE_THRESHOLD 1  // 只需检测1次全白就判定为转弯
 
 #define IRR_SPEED 			 450  //巡线速度	Line patrol speed
-#define TURN_SPEED            550  //转弯速度 Turn speed
+#define TURN_SPEED            500  //转弯速度（原地转向）
 
 // 转弯控制函数 Turn control function
 // 返回值：1表示正在转弯，0表示不需要转弯
 u8 TurnControl_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
-	// // 右转条件：右侧传感器检测到线，左侧未检测到
-	// // Right turn: right sensor detects line, left side clear
-	// if((x1 == 1 || x2 == 1) && x8 == 0) 
-	// {
-	// 	// 右转：左电机正转，右电机停止
-	// 	// Right turn: left motor forward, right motor stop
-	// 	Motion_Set_Speed(TURN_SPEED, 0);
-	// 	return 1;
-	// }
-	// // 左转条件：左侧传感器检测到线，右侧未检测到
-	// // Left turn: left sensor detects line, right side clear
-	// else if((x7 == 1 || x8 == 1) && x1 == 0) 
-	// {
-	// 	// 左转：右电机正转，左电机停止
-	// 	// Left turn: right motor forward, left motor stop
-	// 	Motion_Set_Speed(0, TURN_SPEED);
-	// 	return 1;
-	// }
-
-	//return 0; // 不需要转弯 No turn needed
-	
-
 	int turn_direact = 0;
 	turn_direact = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8;
 	return turn_direact;
 }
 u8 TurnControl_read_left(u8 x1, u8 x2, u8 x3, u8 x4)
 {
-	// // 右转条件：右侧传感器检测到线，左侧未检测到
-	// // Right turn: right sensor detects line, left side clear
-	// if((x1 == 1 || x2 == 1) && x8 == 0) 
-	// {
-	// 	// 右转：左电机正转，右电机停止
-	// 	// Right turn: left motor forward, right motor stop
-	// 	Motion_Set_Speed(TURN_SPEED, 0);
-	// 	return 1;
-	// }
-	// // 左转条件：左侧传感器检测到线，右侧未检测到
-	// // Left turn: left sensor detects line, right side clear
-	// else if((x7 == 1 || x8 == 1) && x1 == 0) 
-	// {
-	// 	// 左转：右电机正转，左电机停止
-	// 	// Left turn: right motor forward, left motor stop
-	// 	Motion_Set_Speed(0, TURN_SPEED);
-	// 	return 1;
-	// }
-
-	//return 0; // 不需要转弯 No turn needed
-	
-
 	int turn_direact_left = 0;
 	turn_direact_left = x1 + x2 + x3 + x4;
 	return turn_direact_left;
@@ -81,28 +42,6 @@ u8 TurnControl_read_left(u8 x1, u8 x2, u8 x3, u8 x4)
 
 u8 TurnControl_read_right(u8 x5, u8 x6, u8 x7, u8 x8)
 {
-	// // 右转条件：右侧传感器检测到线，左侧未检测到
-	// // Right turn: right sensor detects line, left side clear
-	// if((x1 == 1 || x2 == 1) && x8 == 0) 
-	// {
-	// 	// 右转：左电机正转，右电机停止
-	// 	// Right turn: left motor forward, right motor stop
-	// 	Motion_Set_Speed(TURN_SPEED, 0);
-	// 	return 1;
-	// }
-	// // 左转条件：左侧传感器检测到线，右侧未检测到
-	// // Left turn: left sensor detects line, right side clear
-	// else if((x7 == 1 || x8 == 1) && x1 == 0) 
-	// {
-	// 	// 左转：右电机正转，左电机停止
-	// 	// Left turn: right motor forward, left motor stop
-	// 	Motion_Set_Speed(0, TURN_SPEED);
-	// 	return 1;
-	// }
-
-	//return 0; // 不需要转弯 No turn needed
-	
-
 	int turn_direact_right = 0;
 	turn_direact_right = x5 + x6 + x7 + x8;
 	return turn_direact_right;
@@ -159,154 +98,183 @@ void LineWalking(void)
 	
 	deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 	
-	// 检测是否全白（所有传感器都为1）
-	u8 all_white = (TurnControl_read(x1, x2, x3, x4, x5, x6, x7, x8) == 8);
+	// 检测是否全黑（所有传感器都为0，黑底白线下全黑表示离开赛道）
+	u8 all_black = (x1==0 && x2==0 && x3==0 && x4==0 && x5==0 && x6==0 && x7==0 && x8==0);
+	
+	// 放宽左侧白线检测：左侧3个为白（更容易触发）
+	u8 left_white = ((x1==1 || x2==1 || x3==1) && (x1+x2+x3 >= 2) && x7==0 && x8==0);
+	
+	// 放宽右侧白线检测：右侧3个为白（更容易触发）
+	u8 right_white = ((x6==1 || x7==1 || x8==1) && (x6+x7+x8 >= 2) && x1==0 && x2==0);
+	
+	// 预检测状态超时处理
+	if(turn_pre_state != 0)
+	{
+		pre_state_timeout++;
+		if(pre_state_timeout > PRE_STATE_TIMEOUT_MAX)
+		{
+			turn_pre_state = 0;  // 超时清零
+			pre_state_timeout = 0;
+		}
+	}
 	
 	// 如果当前处于转弯状态
 	if(turning_state != 0)
 	{
-		// 检查是否转到中心位置（中间传感器检测到线）
-		if(x4 == 0 || x5 == 0)  // 中心传感器检测到黑线
+		// 检查是否转到中心位置（中间传感器检测到白线）
+		if(x4 == 1 || x5 == 1)  // 中心传感器检测到白线
 		{
 			// 转到中心位置，退出转弯状态
 			turning_state = 0;
-			all_white_counter = 0;  // 重置计数器
+			turn_pre_state = 0;
+			all_white_counter = 0;
+			pre_state_timeout = 0;
+			// 不立即返回，继续执行后续的巡线逻辑，让过渡更平滑
 		}
 		else
 		{
-			// 继续转弯
+			// 继续转弯（原地转向）
 			if(turning_state == 1)  // 左转
 			{
-				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);
+				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);  // 左轮反转，右轮正转
 			}
 			else if(turning_state == 2)  // 右转
 			{
-				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);
+				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);  // 左轮正转，右轮反转
 			}
-			return; // 转弯中，直接返回
+			return;
 		}
 	}
 	
-	// 处理全白检测（可能是转弯或传感器切换）
-	if(all_white)
+	// 转弯预检测：记录检测到左侧白或右侧白
+	if(left_white)
+	{
+		turn_pre_state = 1;
+		all_white_counter = 0;
+		pre_state_timeout = 0;
+		// 预判断转弯，提前减速并预转
+		Motion_Car_Control(IRR_SPEED * 0.75, 0, -200);  // 轻微减速，加大左转力矩
+		return;
+	}
+	else if(right_white)
+	{
+		turn_pre_state = 2;
+		all_white_counter = 0;
+		pre_state_timeout = 0;
+		// 预判断转弯，提前减速并预转
+		Motion_Car_Control(IRR_SPEED * 0.75, 0, 200);  // 轻微减速，加大右转力矩
+		return;
+	}
+	
+	// 处理全黑检测（可能是转弯）
+	if(all_black)
 	{
 		all_white_counter++;
 		
 		// 连续检测到全白达到阈值，判定为真正的转弯
 		if(all_white_counter >= ALL_WHITE_THRESHOLD)
 		{
-			// 根据上一时刻的电机速度判断转向
-			// last_speed_L < last_speed_R 说明左轮慢，小车在向左转
-			if(last_speed_L < last_speed_R)
+			// 根据之前检测到的状态判断转向
+			if(turn_pre_state == 1)
 			{
-				// 向左转弯：左轮反转，右轮正转
+				// 左转：原地转向
 				turning_state = 1;
-				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);
+				turn_pre_state = 0;
+				Motion_Set_Speed(-TURN_SPEED, TURN_SPEED);  // 左轮反转，右轮正转
+				return;
 			}
-			else if(last_speed_L > last_speed_R)
+			else if(turn_pre_state == 2)
 			{
-				// 向右转弯：左轮正转，右轮反转
+				// 右转：原地转向
 				turning_state = 2;
-				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);
+				turn_pre_state = 0;
+				Motion_Set_Speed(TURN_SPEED, -TURN_SPEED);  // 左轮正转，右轮反转
+				return;
 			}
 			else
 			{
-				// 速度相等，保持直行状态（不太可能出现）
+				// 没有预检测状态，可能是丢线，保持直行
 				Motion_Set_Speed(IRR_SPEED, IRR_SPEED);
+				return;
 			}
-			return; // 正在转弯，直接返回
 		}
 		// 未达到阈值，保持当前状态继续前进
 		return;
 	}
 	else
 	{
-		// 不是全白，重置计数器
+		// 不是全黑，重置全黑计数器（但保留预检测状态）
 		all_white_counter = 0;
 	}
 		
-	if(x3 == 0 &&  x4 == 0  && x5 == 0 && 6 == 0 ) //俩边都亮，直跑	Both sides are bright, run straight
+	if(x3 == 1 &&  x4 == 1  && x5 == 1 && x6 == 1 )
 	{
 		err = 0;
 		if(trun_flag == 1)
 		{
-			trun_flag = 0;//走到圈了	Got into the circle
+			trun_flag = 0;
 		}
 	}
 	
-	//优先判断	Priority judgment
- else if(x1 == 0 &&  x3 == 0 && x4 == 0 && x5 == 0 && x8 == 0 )
+ else if(x1 == 1 &&  x3 == 1 && x4 == 1 && x5 == 1 && x8 == 1 )
 	{
 		err = 0;
 	}
-	else if(x1 == 1 && x2 == 1 &&x3 == 1 &&  x4 == 1  && x5 == 1 && x6  == 1 && x7 == 1 && x8 == 1 ) //过锐角	Over sharp angle
+	else if(x1 == 0 && x2 == 0 &&x3 == 0 &&  x4 == 0  && x5 == 0 && x6  == 0 && x7 == 0 && x8 == 0 )
 	{
-		if(trun_flag == 0) //出线了	Qualified
+		if(trun_flag == 0)
 		{
 			err = 0; 
 			trun_flag = 1;
 		}
-		//其它情况保持上个状态	Stay in the previous state in other situations
 	}
 	
-	// 转弯判断已在函数开头处理 Turn conditions handled at function start
-
-	// else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 0 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 1110 1111
-	// {
-	// 	err = -10;
-	// }
-	else if(x1 == 1 && x2 == 1  && x3 == 0&& x4 == 0 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 1100 1111
+	// 转弯判断已在函数开头处理
+	else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 1 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
 	{
-		err = -20;
+		err = -30;
 	}
-	else if(x1 == 1 && x2 == 1  && x3 == 0&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 1101 1111
+	else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
 	{
-		err = -30;  // L3触发修正
+		err = -45;
 	}
 	
-	else if(x1 == 1 && x2 == 0  && x3 == 0&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 1001 1111
+	else if(x1 == 0 && x2 == 1  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
 	{
-		err = -40;  // L2触发更大修正
+		err = -60;
 	}
-	// 左侧大偏航检测
-	// 左侧大偏航检测
-	else if(x1 == 0 && x2 == 0  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 0011 1111
+	else if(x1 == 0 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
 	{
-		err = -50;  // L1+L2触发大偏航修正
+		err = -75;
 	}
-	else if(x1 == 0 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 1) // 0111 1111
+	else if(x1 == 1 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
 	{
-		err = -60;  // L1单独触发，极大偏航修正
+		err = -90;
 	}
 
-	// else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 0 && x6 == 1  && x7 == 1 && x8 == 1) // 1111 0111
-	// {
-	// 	err = 10;
-	// } 
-	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 1) // 1111 0011
+	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0)
 	{
-		err = 20;
+		err = 30;
 	}
-	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 0  && x7 == 1 && x8 == 1) // 1111 1011
+	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 0 && x8 == 0)
 	{
-		err =30;  // L6触发修正
+		err =45;
 	}
-	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 0  && x7 == 0 && x8 == 1) // 1111 1001
+	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 1 && x8 == 0)
 	{
-		err = 40;  // L7触发更大修正
+		err = 60;
 	}
-	// 右侧大偏航检测
-	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0) // 1111 1100
+	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 0)
 	{
-		err = 50;  // R7+R8触发大偏航修正
+		err = 75;
 	}
-	else if(x1 == 1 && x2 == 1  && x3 == 1&& x4 == 1 && x5 == 1 && x6 == 1  && x7 == 1 && x8 == 0) // 1111 1110
+	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 1)
 	{
-		err = 60;  // R8单独触发，极大偏航修正
+		err = 90;
 	}
 	
  
-	else if(x1 == 1 &&x2 == 1 &&x3 == 1 && (x4 == 0 || x5 == 0) && x6 == 1 && x7 == 1&& x8 == 1) //直走	Go straight
+	else if(x1 == 0 &&x2 == 0 &&x3 == 0 && (x4 == 1 || x5 == 1) && x6 == 0 && x7 == 0&& x8 == 0)
 	{
 		err = 0;
 	}
