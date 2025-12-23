@@ -47,11 +47,18 @@ u8 TurnControl_read_right(u8 x5, u8 x6, u8 x7, u8 x8)
 	return turn_direact_right;
 }
 
-float APP_IR_PID_Calc(int8_t actual_value)
+int16_t track_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
+{
+	int16_t err;
+	err = 750*x1 + 150*x2 + 50*x3 + 10*x4 - 10*x5 - 50*x6 - 150*x7 - 750*x8;
+	return err;
+}
+
+float APP_IR_PID_Calc(int16_t actual_value)
 {
 	float IRTrackTurn = 0;
-	int8_t error;
-	static int8_t error_last=0;
+	int16_t error;
+	static int16_t error_last=0;
 	static float IRTrack_Integral;//积分	integral
 	
 	error=actual_value;
@@ -92,7 +99,7 @@ void deal_IRdata(u8 *x1,u8 *x2,u8 *x3,u8 *x4,u8 *x5,u8 *x6,u8 *x7,u8 *x8)
 
 void LineWalking(void)
 {
-	static int8_t err = 0;
+	static int16_t err = 0;
 	static u8 x1,x2,x3,x4,x5,x6,x7,x8;
 	int16_t current_speed_L, current_speed_R;
 	
@@ -207,79 +214,59 @@ void LineWalking(void)
 		all_white_counter = 0;
 	}
 		
-	if(x3 == 1 &&  x4 == 1  && x5 == 1 && x6 == 1 )
-	{
-		err = 0;
-		if(trun_flag == 1)
-		{
-			trun_flag = 0;
-		}
-	}
-	
- else if(x1 == 1 &&  x3 == 1 && x4 == 1 && x5 == 1 && x8 == 1 )
-	{
-		err = 0;
-	}
-	else if(x1 == 0 && x2 == 0 &&x3 == 0 &&  x4 == 0  && x5 == 0 && x6  == 0 && x7 == 0 && x8 == 0 )
-	{
-		if(trun_flag == 0)
-		{
-			err = 0; 
-			trun_flag = 1;
-		}
-	}
+	// 使用加权算法计算误差值
+	err = track_read(x1, x2, x3, x4, x5, x6, x7, x8);
 	
 	// 转弯判断已在函数开头处理
-	else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 1 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
-	{
-		err = -30;
-	}
-	else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
-	{
-		err = -45;
-	}
+	// else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 1 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = -30;
+	// }
+	// else if(x1 == 0 && x2 == 0  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = -45;
+	// }
 	
-	else if(x1 == 0 && x2 == 1  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
-	{
-		err = -60;
-	}
-	else if(x1 == 0 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
-	{
-		err = -75;
-	}
-	else if(x1 == 1 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
-	{
-		err = -90;
-	}
+	// else if(x1 == 0 && x2 == 1  && x3 == 1 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = -60;
+	// }
+	// else if(x1 == 0 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = -75;
+	// }
+	// else if(x1 == 1 && x2 == 1  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = -90;
+	// }
 
-	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0)
-	{
-		err = 30;
-	}
-	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 0 && x8 == 0)
-	{
-		err =45;
-	}
-	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 1 && x8 == 0)
-	{
-		err = 60;
-	}
-	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 0)
-	{
-		err = 75;
-	}
-	else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 1)
-	{
-		err = 90;
-	}
+	// else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 1 && x6 == 1  && x7 == 0 && x8 == 0)
+	// {
+	// 	err = 30;
+	// }
+	// else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 0 && x8 == 0)
+	// {
+	// 	err =45;
+	// }
+	// else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 1  && x7 == 1 && x8 == 0)
+	// {
+	// 	err = 60;
+	// }
+	// else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 0)
+	// {
+	// 	err = 75;
+	// }
+	// else if(x1 == 0 && x2 == 0  && x3 == 0 && x4 == 0 && x5 == 0 && x6 == 0  && x7 == 1 && x8 == 1)
+	// {
+	// 	err = 90;
+	// }
 	
  
-	else if(x1 == 0 &&x2 == 0 &&x3 == 0 && (x4 == 1 || x5 == 1) && x6 == 0 && x7 == 0&& x8 == 0)
-	{
-		err = 0;
-	}
-	
-	
+	// else if(x1 == 0 &&x2 == 0 &&x3 == 0 && (x4 == 1 || x5 == 1) && x6 == 0 && x7 == 0&& x8 == 0)
+	// {
+	// 	err = 0;
+	// }
+
 	
 	//剩下的就保持上一个状态	The rest will remain in the previous state
 	pid_output_IRR = (int)(APP_IR_PID_Calc(err));
