@@ -57,15 +57,21 @@ int main(void)
 		OLED_ShowNum(72, 16, x7, 1, 8, 1);
 		OLED_ShowNum(80, 16, x8, 1, 8, 1);
 		
-//		// 显示循迹误差值
-//		OLED_ShowString(0, 32, (uint8_t*)"Err:", 8, 1);
-//		if(track_err >= 0) {
-//			OLED_ShowString(32, 32, (uint8_t*)"+", 8, 1);
-			OLED_ShowNum(0, 0, correction, 4, 8, 1);
-//		} else {
-//			OLED_ShowString(32, 32, (uint8_t*)"-", 8, 1);
-			OLED_ShowNum(40, 32,   direct, 4, 8, 1);
-//		}
+		// 显示循迹误差值
+		OLED_ShowString(0, 32, (uint8_t*)"Err:", 8, 1);
+		if(track_err >= 0) {
+			OLED_ShowString(32, 32, (uint8_t*)"+", 8, 1);
+			OLED_ShowNum(40, 32, track_err, 3, 8, 1);
+		} else {
+			OLED_ShowString(32, 32, (uint8_t*)"-", 8, 1);
+			OLED_ShowNum(40, 32, -track_err, 3, 8, 1);
+		}
+		
+		// 显示 correction 和 direct
+		OLED_ShowString(0, 0, (uint8_t*)"Cor:", 8, 1);
+		OLED_ShowNum(32, 0, (int16_t)correction, 3, 8, 1);
+		OLED_ShowString(64, 0, (uint8_t*)"D:", 8, 1);
+		OLED_ShowNum(80, 0, direct, 2, 8, 1);
 		
 		
 		// 显示编码器值

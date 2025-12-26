@@ -28,7 +28,7 @@ uint8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 int16_t track_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
 	int16_t err;
-	err = 30*x1 + 15*x2 + 5*x3 + 0.2*x4 + 0.2*x5 - 5*x6 - 15*x7 - 30*x8;
+	err = 25*x1 + 10*x2 + 1*x3 + 0.5*x4 - 0.5*x5 - 1*x6 - 10*x7 - 25*x8;
 	return err;
 }
 
