@@ -39,7 +39,13 @@ void TIMER_20ms_INST_IRQHandler(void)
 		// 读取编码器值（每10ms读取一次）
 		encoder_left = motorL_encoder.count;   // 本周期左电机脉冲数
 		encoder_right = motorR_encoder.count;  // 本周期右电机脉冲数
-		
+
+		// 转弯或失线状态下，清空积分，避免带入直行控制
+		if (direct == 0) {
+			TRACK_PID.sum_error = 0;
+			TRACK_PID.pre_error = 0;
+		}
+
 		correction = pid_control_track(track_err, &TRACK_PID);
 
         // 只有在非转弯状态(direct != 0)时才使用PID控制

@@ -250,16 +250,17 @@ PID SPEED_PID_R = {
     .limit_output = 68
 };
 
+
 PID TRACK_PID = {
-    .KP = 0.08,
-    .KI = 0.0025,
-    .KD = 0.2,
+    .KP = 0.015,
+    .KI = 0.001,
+    .KD = 0,
 	  .output = 0,
 	  .error = 0,
 	  .sum_error = 0,
     .pre_error = 0,
-    .limit_sum_error = 100,
-    .limit_output = 68
+    .limit_sum_error = 50,
+    .limit_output = 100
 };
                       
 void pid_control_speed(int current, float target, PID *pid)
@@ -304,22 +305,38 @@ void pid_control_speed(int current, float target, PID *pid)
 float pid_control_track(int track_error, PID *pid)
 {
     pid->error = track_error;
+
+    // 小误差抑制（死区），避免积分在微小波动时累计
+    int abs_err = pid->error < 0 ? -pid->error : pid->error;
+    if (abs_err <= 2) {
+        pid->error = 0;
+    }
+
+    // 误差符号变化时，重置积分，提升响应性
+    if (pid->pre_error != 0 && (long)pid->pre_error * (long)pid->error < 0) {
+        pid->sum_error = 0;
+    }
+
+    // 积分项累计并限幅
     pid->sum_error += pid->error;
     if (pid->sum_error > pid->limit_sum_error)
         pid->sum_error = pid->limit_sum_error;
     if (pid->sum_error < -pid->limit_sum_error)
         pid->sum_error = -pid->limit_sum_error;
 
-//    float derivative = pid->error - pid->pre_error;
-//    pid->pre_error = pid->error;
-
-    float output = pid->KP * pid->error +
-                   pid->KI * pid->sum_error;
-		//+pid->KD * derivative;
+    // 预计算输出，若饱和则进行反积分（抗风up）
+    float output = pid->KP * pid->error + pid->KI * pid->sum_error;
+    if (output > pid->limit_output || output < -pid->limit_output) {
+        // 撤销本次积分，避免继续“顶住”饱和
+        pid->sum_error -= pid->error;
+        // 重新计算并最终限幅
+        output = pid->KP * pid->error + pid->KI * pid->sum_error;
+    }
 
     if (output > pid->limit_output) output = pid->limit_output;
     if (output < -pid->limit_output) output = -pid->limit_output;
 
+    pid->pre_error = pid->error;
     pid->output = output;
     return output;
 }
