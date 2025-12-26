@@ -116,7 +116,7 @@ extern "C" {
 #define TIMER_20ms_INST                                                  (TIMG6)
 #define TIMER_20ms_INST_IRQHandler                              TIMG6_IRQHandler
 #define TIMER_20ms_INST_INT_IRQN                                (TIMG6_INT_IRQn)
-#define TIMER_20ms_INST_LOAD_VALUE                                      (19999U)
+#define TIMER_20ms_INST_LOAD_VALUE                                       (9999U)
 
 
 

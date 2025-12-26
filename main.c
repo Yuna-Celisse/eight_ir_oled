@@ -7,22 +7,9 @@ void Display_Countdown(uint8_t seconds);
 void Check_Wide_Line(void);
 void RGB_Running_Effect(void);
 
-// 系统状态变量
-typedef enum {
-    STATE_COUNTDOWN,     // 倒计时等待启动
-    STATE_RUNNING,       // 运行中
-    STATE_FINISHED       // 已完成
-} SystemState_t;
-
-SystemState_t system_state = STATE_COUNTDOWN;
-volatile uint32_t run_time_ms = 0;      // 运行时间(毫秒)
-volatile uint8_t beep_point_count = 0;  // 蜂鸣器点位计数
-volatile bool is_on_wide_line = false;  // 是否在宽线上
-volatile bool wide_line_detected = false; // 宽线检测标志
-volatile uint8_t wide_line_type = 0;    // 宽线类型: 1=起点, 2=蜂鸣器点, 3=终点
-volatile uint32_t rgb_effect_counter = 0;
-volatile uint32_t countdown_ms = 0;     // 倒计时(毫秒)
-uint8_t countdown_seconds = 3;          // 倒计时秒数（可修改：3秒/5秒/10秒）
+int direct;
+volatile bool left_forward = 0;
+volatile bool right_forward = 0;
 
 int main(void)
 {
@@ -32,193 +19,93 @@ int main(void)
 	OLED_Init();            
 	 // 串口通信初始化  USART communication initialization	
 	USART_Init();           
-	 
+     // 电机PWM初始化  Motor PWM initialization
 	Init_Motor_PWM();
    //初始化电机编码器
   encoder_init(); 
 //  电机控速pid2初始化
-  PID_Param_Init();
+ // PID_Param_Init();
   
   // 初始显示
   OLED_Clear();
-  OLED_ShowString(0, 0, "Smart Car Race", 8, 1);
-  OLED_ShowString(0, 16, "Start in:", 8, 1);
+ // OLED_ShowString(0, 0, (uint8_t*)"Track Monitor", 8, 1);
   OLED_Refresh();
-  
-  // 初始化倒计时
-  countdown_ms = countdown_seconds * 1000;
 
 	uart0_send_string("$0,0,1#");
 	
+	// 启动电机控制 - 现在使用PID控制，注释掉直接控制
+	// 参数：左轮方向(true=前进), 左轮速度(0-10000), 右轮方向, 右轮速度
+	// Motor_Set(true, 5000, true, 5000);  // 两轮都以50%速度前进
+	
 	while (1)                
 	{
-		// 状态机处理
-		switch(system_state) {
-			case STATE_COUNTDOWN:
-				// 倒计时显示
-				Display_Countdown((countdown_ms + 999) / 1000);  // 向上取整显示秒数
-				
-				// 倒计时结束，自动启动
-				if(countdown_ms == 0) {
-					system_state = STATE_RUNNING;
-					run_time_ms = 0;
-					beep_point_count = 0;
-					OLED_Clear();
-					Beep_Times(2);  // 启动提示音（响2次）
-					delay_ms(200);  // 短暂延时
-				}
-				break;
-				
-			case STATE_RUNNING:
-				// 检测宽线并处理
-				Check_Wide_Line();
-				
-				// 巡线控制
-				LineWalking();
-				
-				// RGB灯效
-				RGB_Running_Effect();
-				
-				// 显示运行时间和状态
-				Display_Time();
-				
-// 显示yaw角
-			#if YAW_COMPENSATION_ENABLE
-			extern volatile float Filter_out;
-			OLED_ShowString(0, 32, "Yaw:", 8, 1);
-			OLED_ShowNum(32, 32, (int)Filter_out, 4, 8, 1);
-			#endif
-			
-			// 显示传感器数据
-			// if(IR_recv_complete_flag) {
-			// 	for (int i = 0; i < 8; i++) 
-			// 		OLED_ShowNum(10 + i * 10, 48, IR_Data_number[i], 1, 8, 1);
-			// }
-			break;
-			
-		case STATE_FINISHED:
-			// 停车状态
-			Motion_Ctrl(0, 0, 0);
-			//OLED_ShowString(0, 56, "FINISH!", 8, 1);
-			break;
-		}
+		// 读取红外传感器数据
+		static u8 x1,x2,x3,x4,x5,x6,x7,x8;
+		deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
+		 
+		track_err = track_read(x1,x2,x3,x4,x5,x6,x7,x8); 
+		direct = Direct_Read(x1,x2,x3,x4,x5,x6,x7,x8);
 		
+		// 显示循迹传感器状态（第一行：传感器1-4）
+		OLED_ShowString(0, 16, (uint8_t*)"IR:", 8, 1);
+		OLED_ShowNum(24, 16, x1, 1, 8, 1);
+		OLED_ShowNum(32, 16, x2, 1, 8, 1);
+		OLED_ShowNum(40, 16, x3, 1, 8, 1);
+		OLED_ShowNum(48, 16, x4, 1, 8, 1);
+		OLED_ShowNum(56, 16, x5, 1, 8, 1);
+		OLED_ShowNum(64, 16, x6, 1, 8, 1);
+		OLED_ShowNum(72, 16, x7, 1, 8, 1);
+		OLED_ShowNum(80, 16, x8, 1, 8, 1);
+		
+//		// 显示循迹误差值
+//		OLED_ShowString(0, 32, (uint8_t*)"Err:", 8, 1);
+//		if(track_err >= 0) {
+//			OLED_ShowString(32, 32, (uint8_t*)"+", 8, 1);
+			OLED_ShowNum(0, 0, correction, 4, 8, 1);
+//		} else {
+//			OLED_ShowString(32, 32, (uint8_t*)"-", 8, 1);
+			OLED_ShowNum(40, 32,   direct, 4, 8, 1);
+//		}
+		
+		
+		// 显示编码器值
+		OLED_ShowString(88, 32, (uint8_t*)"L:", 8, 1);
+		OLED_ShowNum(104, 32, motorL_encoder.count, 3, 8, 1);
+		OLED_ShowString(88, 48, (uint8_t*)"R:", 8, 1);
+		OLED_ShowNum(104, 48, motorR_encoder.count, 3, 8, 1);
+		
+		// 刷新OLED显示
 		OLED_Refresh();
-	}	
-
-}
-
-// 显示倒计时
-void Display_Countdown(uint8_t seconds) {
-    //OLED_ShowNum(48, 32, seconds, 2, 8, 1);
-    //OLED_ShowString(72, 32, "s", 8, 1);
-    
-    if(seconds > 0) {
-        //OLED_ShowString(0, 48, "Ready...", 8, 1);
-    } else {
-        //OLED_ShowString(0, 48, "GO!", 8, 1);
+		
+		if (direct == 0)
+ 		{
+ 			// direct为0：根据上一次的趋势继续转向
+ 			if (last_target_L < last_target_R)  // 左转趋势
+ 			{
+				Motor_Set(left_forward = 0, 274, right_forward = 1, 24);
+				//target_R = 40;
+				//target_L = 0;
+				
+ 			}
+ 			else if(last_target_L > last_target_R)// 右转趋势
+ 			{
+				Motor_Set(left_forward = 1, 24, right_forward = 0, 24);
+				//target_R = 0;
+				//target_L = 40;
+ 			}
+ 		}
+ 		else
+ 		{ 
+		 Motor_Set(left_forward = 1, SPEED, right_forward = 1, SPEED);
+		 target_L = SPEED - correction;
+     target_R = SPEED + correction;
+		 // 限幅
+		 if (target_L < 0) target_L = 0;
+		 if (target_R < 0) target_R = 0;
+		 if (target_L > 68) target_L = 68;
+		 if (target_R > 68) target_R = 68;		
     }
-}
-
-// 蜂鸣器响N次
-void Beep_Times(uint8_t times) {
-    for(uint8_t i = 0; i < times; i++) {
-        Buzzer_open_state();
-        delay_ms(150);  // 响150ms
-        Buzzer_close_state();
-        if(i < times - 1) {
-            delay_ms(150);  // 间隔150ms
-        }
-    }
-}
-
-// 显示运行时间
-void Display_Time(void) {
-    uint32_t seconds = run_time_ms / 1000;
-    uint32_t centiseconds = (run_time_ms % 1000) / 10;
-    
-    // OLED_ShowString(0, 0, "T:", 8, 1);
-    // OLED_ShowNum(16, 0, seconds, 2, 8, 1);
-    // OLED_ShowString(40, 0, ".", 8, 1);
-    // OLED_ShowNum(48, 0, centiseconds, 2, 8, 1);
-    
-    // OLED_ShowString(0, 16, "B:", 8, 1);
-    // OLED_ShowNum(16, 16, beep_point_count, 1, 8, 1);
-}
-
-// 检测宽线（20cm宽度）
-void Check_Wide_Line(void) {
-    static uint8_t wide_line_hold = 0;
-    
-    // 读取8路循迹传感器
-    uint8_t all_white = 1;
-    for(int i = 0; i < 8; i++) {
-        if(IR_Data_number[i] == 1) {  // 1表示检测到白线
-            all_white = 0;
-            break;
-        }
-    }
-    
-    // 如果所有传感器都检测到白线，说明遇到宽线
-    if(all_white == 0) {
-        // 检查是否8个传感器大部分都是白色（检测宽线）
-        uint8_t white_count = 0;
-        for(int i = 0; i < 8; i++) {
-            if(IR_Data_number[i] == 1) white_count++;
-        }
-        
-        if(white_count >= 6) {  // 至少6个传感器检测到白线
-            if(!is_on_wide_line) {
-                is_on_wide_line = true;
-                beep_point_count++;
-                
-                // 判断是否为终点（第9个宽线是终点D）
-                if(beep_point_count >= 9) {  // A B B B C C C B D，第9个宽线是终点
-                    system_state = STATE_FINISHED;
-                    Beep_Times(2);  // 终点提示音
-                } else if(beep_point_count == 2 || beep_point_count == 3 || beep_point_count == 4 || beep_point_count == 8) {
-                    // B点位：响应次数对应点位顺序
-                    uint8_t beep_times = 0;
-                    if(beep_point_count == 2) beep_times = 1;       // 第一个B
-                    else if(beep_point_count == 3) beep_times = 2;  // 第二个B
-                    else if(beep_point_count == 4) beep_times = 3;  // 第三个B
-                    else if(beep_point_count == 8) beep_times = 4;  // 第四个B
-                    
-                    Beep_Times(beep_times);
-                }
-                
-                wide_line_hold = 20;  // 保持一段时间防止重复触发
-            }
-        } else {
-            if(wide_line_hold > 0) {
-                wide_line_hold--;
-            } else {
-                is_on_wide_line = false;
-            }
-        }
-    } else {
-        if(wide_line_hold > 0) {
-            wide_line_hold--;
-        } else {
-            is_on_wide_line = false;
-        }
-    }
-}
-
-// RGB跑马灯效果
-void RGB_Running_Effect(void) {
-    #if defined(Control_RGB_ALL)
-    rgb_effect_counter++;
-    if(rgb_effect_counter % 50 == 0) {  // 每50个循环改变一次
-        uint8_t pattern = (rgb_effect_counter / 50) % 6;
-        switch(pattern) {
-            case 0: Control_RGB_ALL(Red_RGB); break;
-            case 1: Control_RGB_ALL(Green_RGB); break;
-            case 2: Control_RGB_ALL(Blue_RGB); break;
-            case 3: Control_RGB_ALL(Yellow_RGB); break;
-            case 4: Control_RGB_ALL(Purple_RGB); break;
-            case 5: Control_RGB_ALL(Cyan_RGB); break;
-        }
-    }
-    #endif
+		last_target_L = target_L;
+		last_target_R = target_R;
+	}
 }

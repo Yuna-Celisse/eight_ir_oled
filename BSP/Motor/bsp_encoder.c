@@ -16,8 +16,8 @@ void encoder_init(void)
 	NVIC_EnableIRQ(GPIOB_INT_IRQn);
 	NVIC_EnableIRQ(GPIOA_INT_IRQn);
     
-     //测速定时器
-    Timer_20ms_Init();
+     //测速定时器 10ms
+    Timer_10ms_Init();
 }
 
 
@@ -53,7 +53,7 @@ void Encoder_Get_Temp(int *Encoder_temp)
 
 
 //编码器数据更新
-//请间隔一定时间更新 20ms更新一次
+//请间隔一定时间更新 10ms更新一次
 void encoder_update(void)
 {
 		motorL_encoder.count = motorL_encoder.temp_count;

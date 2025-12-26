@@ -243,7 +243,7 @@ static const DL_TimerA_ClockConfig gmotor_PWMClockConfig = {
 
 static const DL_TimerA_PWMConfig gmotor_PWMConfig = {
     .pwmMode = DL_TIMER_PWM_MODE_EDGE_ALIGN,
-    .period = 1000,
+    .period = 10000,
     .isTimerWithFourCC = true,
     .startTimer = DL_TIMER_STOP,
 };
@@ -261,28 +261,28 @@ SYSCONFIG_WEAK void SYSCFG_DL_motor_PWM_init(void) {
 		DL_TIMERA_CAPTURE_COMPARE_0_INDEX);
 
     DL_TimerA_setCaptCompUpdateMethod(motor_PWM_INST, DL_TIMER_CC_UPDATE_METHOD_IMMEDIATE, DL_TIMERA_CAPTURE_COMPARE_0_INDEX);
-    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 1000, DL_TIMER_CC_0_INDEX);
+    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
 
     DL_TimerA_setCaptureCompareOutCtl(motor_PWM_INST, DL_TIMER_CC_OCTL_INIT_VAL_LOW,
 		DL_TIMER_CC_OCTL_INV_OUT_DISABLED, DL_TIMER_CC_OCTL_SRC_FUNCVAL,
 		DL_TIMERA_CAPTURE_COMPARE_1_INDEX);
 
     DL_TimerA_setCaptCompUpdateMethod(motor_PWM_INST, DL_TIMER_CC_UPDATE_METHOD_IMMEDIATE, DL_TIMERA_CAPTURE_COMPARE_1_INDEX);
-    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 1000, DL_TIMER_CC_1_INDEX);
+    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
 
     DL_TimerA_setCaptureCompareOutCtl(motor_PWM_INST, DL_TIMER_CC_OCTL_INIT_VAL_LOW,
 		DL_TIMER_CC_OCTL_INV_OUT_DISABLED, DL_TIMER_CC_OCTL_SRC_FUNCVAL,
 		DL_TIMERA_CAPTURE_COMPARE_2_INDEX);
 
     DL_TimerA_setCaptCompUpdateMethod(motor_PWM_INST, DL_TIMER_CC_UPDATE_METHOD_IMMEDIATE, DL_TIMERA_CAPTURE_COMPARE_2_INDEX);
-    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 1000, DL_TIMER_CC_2_INDEX);
+    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
 
     DL_TimerA_setCaptureCompareOutCtl(motor_PWM_INST, DL_TIMER_CC_OCTL_INIT_VAL_LOW,
 		DL_TIMER_CC_OCTL_INV_OUT_DISABLED, DL_TIMER_CC_OCTL_SRC_FUNCVAL,
 		DL_TIMERA_CAPTURE_COMPARE_3_INDEX);
 
     DL_TimerA_setCaptCompUpdateMethod(motor_PWM_INST, DL_TIMER_CC_UPDATE_METHOD_IMMEDIATE, DL_TIMERA_CAPTURE_COMPARE_3_INDEX);
-    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 1000, DL_TIMER_CC_3_INDEX);
+    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
 
     DL_TimerA_enableClock(motor_PWM_INST);
 
@@ -308,7 +308,7 @@ static const DL_TimerG_ClockConfig gTIMER_20msClockConfig = {
 
 /*
  * Timer load value (where the counter starts from) is calculated as (timerPeriod * timerClockFreq) - 1
- * TIMER_20ms_INST_LOAD_VALUE = (20 ms * 1000000 Hz) - 1
+ * TIMER_20ms_INST_LOAD_VALUE = (10 ms * 1000000 Hz) - 1
  */
 static const DL_TimerG_TimerConfig gTIMER_20msTimerConfig = {
     .period     = TIMER_20ms_INST_LOAD_VALUE,
@@ -380,4 +380,3 @@ SYSCONFIG_WEAK void SYSCFG_DL_SYSTICK_init(void)
     /* Enable the SysTick and start counting */
     DL_SYSTICK_enable();
 }
-

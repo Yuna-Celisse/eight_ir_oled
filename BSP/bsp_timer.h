@@ -3,7 +3,13 @@
 
 #include "AllHeader.h"
 
-void Timer_20ms_Init(void);
+void Timer_10ms_Init(void);
+
+extern int16_t track_err;
+extern float correction;
+extern volatile int target_L;
+extern volatile int last_target_L;
+extern volatile int target_R;
+extern volatile int last_target_R;
 
 #endif
-

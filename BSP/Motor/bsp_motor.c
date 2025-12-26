@@ -1,177 +1,71 @@
 #include "bsp_motor.h"
 
-
-
 void Init_Motor_PWM(void)
 {
-    DL_TimerA_startCounter(motor_PWM_INST);
-   	Motor_Stop(1);
+    SYSCFG_DL_motor_PWM_init();
+    DL_TimerA_startCounter(motor_PWM_INST);  // 启动PWM定时器
 }
 
-//电机死区
-static int16_t Motor_Ignore_Dead_Zone(int16_t pulse)
+/**
+ * @brief 电机控制函数 - 设置左右轮的方向和速度
+ * @param left_forward  左轮方向: true=前进, false=后退
+ * @param left_speed    左轮速度: 0-10000 (0=停止, 10000=满转)
+ * @param right_forward 右轮方向: true=前进, false=后退
+ * @param right_speed   右轮速度: 0-10000 (0=停止, 10000=满转)
+ */
+void Motor_Set(bool left_forward, uint16_t left_speed, bool right_forward, uint16_t right_speed)
 {
-    if (pulse > 0) return pulse + MOTOR_DEAD_ZONE;
-    if (pulse < 0) return pulse - MOTOR_DEAD_ZONE;
-    return 0;
-}
-
-//速度限制
-int16_t speed_limit(int16_t speed,int16_t min,int16_t max)
-{
-    if(speed == 0)
-        return 0;
-    else if (speed<min)
-        return min;
+    //限制最大速度为85%，避免100%占空比可能的问题
+    if(left_speed*125 > 8500) left_speed = 8500;
+    if(right_speed*135 > 8500) right_speed = 8500;
     
-    else if(speed >max)
-        return max;
-    
-    return speed;
-}
-
-int myabs(int a)
-{
-    if (a<0)
-        return -a;
-    return a;
-}
-
-
-void PWM_Control_Car(int16_t L_motor_speed , int16_t R_motor_speed )
-{
-    int16_t sl,sr;
-    
-    //限制最大最小pwm输出
-    sl = speed_limit(L_motor_speed,-MAX_SPEED,MAX_SPEED);
-    sr = speed_limit(R_motor_speed,-MAX_SPEED,MAX_SPEED);
-    
-    //限制电机死区
-    sl = Motor_Ignore_Dead_Zone(sl);
-    sr = Motor_Ignore_Dead_Zone(sr);
-    
-    if(sl<0)
+    // 左电机控制 (通道2和通道3)
+    if (left_forward)
     {
-        sl = myabs(sl);
-        L1_control(sl,1);
-    }
-    else
-    {
-       L1_control(sl,0); 
-    }
-    
-    
-    if(sr<0)
-    {
-        sr = myabs(sr);
-        R1_control(sr,1);
-    }
-    else
-    {
-       R1_control(sr,0);
-    }
-
-    
-}
-
-
-//小车停止 参数刹车和不刹车
-void Motor_Stop(uint8_t brake)
-{
-   if(brake == 1)//刹车
-   {
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_3_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_2_INDEX);
-       
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_0_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, MAX_SPEED, DL_TIMER_CC_1_INDEX);
-       
-       
-   }
-   else
-   {
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
+        // 正转：通道3输出PWM，通道2输出0（低电平）
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed*125, DL_TIMER_CC_3_INDEX);
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
-       
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
+    }
+    else
+    {
+        // 反转：通道3输出0（低电平），通道2输出PWM
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed*125, DL_TIMER_CC_2_INDEX);
+    }
+    
+    // 右电机控制 (通道0和通道1)
+    if (right_forward)
+    {
+        // 正转：通道0输出PWM，通道1输出0（低电平）
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed*125, DL_TIMER_CC_0_INDEX);
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
-   }
+    }
+    else
+    {
+        // 反转：通道0输出0（低电平），通道1输出PWM
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed*125, DL_TIMER_CC_1_INDEX);
+    }
 }
 
 
-
-
-
-
-//motor_speed 0-999
-//dir:0正转 1反转
-
-void L1_control(uint16_t motor_speed,uint8_t dir)
-{
-	if(dir)
-	{
-      DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
-	    DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_2_INDEX);
-			
-			
-	}
-	else
-	{
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_3_INDEX);
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
-	}
-		
-}
-
-
-void R1_control(uint16_t motor_speed,uint8_t dir)
-{
-	if(dir)
-	{
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_1_INDEX);
-	}
-	else
-	{
-      DL_TimerA_setCaptureCompareValue(motor_PWM_INST, motor_speed, DL_TIMER_CC_0_INDEX);
-			DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
-			
-	}
-
-}
-
-void Motor_Run(float x,float y)
-{
-		L1_control(x,0);
-		R1_control(y,0);
-}
-
-
-void Motor_Back(float x,float y)
-{
-		L1_control(x,1);
-		R1_control(y,1);
-}
-
-void Motor_Left(float x,float y)
-{
-
-		L1_control(x,1);
-		R1_control(y,0);
-		delay_ms(500);
-		Motor_Stop(1);
-}
-
-void Motor_Right(float x,float y)
-{
-
-		L1_control(x,0);
-		R1_control(y,1);
-		delay_ms(500);
-		Motor_Stop(1);
-
-}
-
-
-
-
+// //小车停止 参数刹车和不刹车
+// void Motor_Stop(uint8_t brake)
+// {
+//    if(brake == 1)//刹车 - 所有通道输出高电平（设置10000）
+//    {
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 8500, DL_TIMER_CC_3_INDEX);
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 8500, DL_TIMER_CC_2_INDEX);
+       
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 8500, DL_TIMER_CC_0_INDEX);
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 8500, DL_TIMER_CC_1_INDEX);
+//    }
+//    else  //不刹车 - 所有通道输出低电平（设置0）
+//    {
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
+       
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
+//         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
+//    }
+// }
