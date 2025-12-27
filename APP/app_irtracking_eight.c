@@ -2,7 +2,7 @@
 
 int Velocity_PWM1,Velocity_PWM2;
 int basicspeed=2500;
-double Kp=4,Ki=0,Kd=1.5;
+double Kp = 3.5, Ki = 2.5,Kd = 1.5;
 pid right  = {0,0,0};
 pid left    = {0,0,0};
 
@@ -34,10 +34,26 @@ uint8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 //	return err;
 //}
 
+//uint8_t Middle_TrackRead(u8 x4, u8 x5)
+//{
+//	int middle_trackRead = 0;
+//	middle_trackRead = x4 + x5;
+//	return middle_trackRead;
+//}
 
 void error_get(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
-	int error1=100,error2=400,error3=700;	
+	int error0 = 15, error1=50,error2=225,error3=525;	
+	if( x5 == 1 )
+	{
+		left.now    -= error0;
+    right.now   += error0;
+	}
+	if( x4 == 1 )
+	{
+		left.now    += error0;
+    right.now   -= error0;
+	}
 	if( x6 == 1 )
 	{
 		    left.now    -= error1;
