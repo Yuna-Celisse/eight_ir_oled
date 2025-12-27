@@ -86,14 +86,14 @@ int main(void)
 		// 刷新OLED显示
 		OLED_Refresh();
 		
-		if (direct == 0)
+		if ((direct >= 3 && direct <= 5) || direct == 0)
  		{
  			// direct为0：根据上一次的趋势继续转向
- 			if (last_target_L > last_target_R)  // 左转趋势
+ 			if ((x1 == 1 && x8 == 0) || (last_target_L < last_target_R))  // 左转趋势
  			{
 				Motor_Set(left_forward = 0, 2000, right_forward = 1, 2000);
  			}
- 			else if(last_target_L < last_target_R)// 右转趋势
+ 			else if((x1 == 0 && x8 == 1) || (last_target_L > last_target_R))// 右转趋势
  			{
 				Motor_Set(left_forward = 1, 2000, right_forward = 0, 2000);
  			}
