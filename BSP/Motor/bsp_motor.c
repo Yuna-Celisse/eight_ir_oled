@@ -16,35 +16,35 @@ void Init_Motor_PWM(void)
 void Motor_Set(bool left_forward, uint16_t left_speed, bool right_forward, uint16_t right_speed)
 {
     //限制最大速度为85%，避免100%占空比可能的问题
-    if(left_speed*125 > 8500) left_speed = 8500;
-    if(right_speed*135 > 8500) right_speed = 8500;
+    if(left_speed > 8500) left_speed = 8500;
+    if(right_speed > 8500) right_speed = 8500;
     
     // 左电机控制 (通道2和通道3)
     if (left_forward)
     {
         // 正转：通道3输出PWM，通道2输出0（低电平）
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed*125, DL_TIMER_CC_3_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed, DL_TIMER_CC_3_INDEX);
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
     }
     else
     {
         // 反转：通道3输出0（低电平），通道2输出PWM
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_3_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed*125, DL_TIMER_CC_2_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, left_speed, DL_TIMER_CC_2_INDEX);
     }
     
     // 右电机控制 (通道0和通道1)
     if (right_forward)
     {
         // 正转：通道0输出PWM，通道1输出0（低电平）
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed*125, DL_TIMER_CC_0_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed, DL_TIMER_CC_0_INDEX);
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
     }
     else
     {
         // 反转：通道0输出0（低电平），通道1输出PWM
         DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_0_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed*125, DL_TIMER_CC_1_INDEX);
+        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, right_speed, DL_TIMER_CC_1_INDEX);
     }
 }
 

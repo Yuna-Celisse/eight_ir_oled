@@ -1,8 +1,10 @@
 #include "app_irtracking_eight.h"
 
-#define IRTrack_Trun_KP (4)
-#define IRTrack_Trun_KI (0) 
-#define IRTrack_Trun_KD (1.5) 
+int Velocity_PWM1,Velocity_PWM2;
+int basicspeed=2500;
+double Kp=4,Ki=0,Kd=1.5;
+pid right  = {0,0,0};
+pid left    = {0,0,0};
 
 void deal_IRdata(u8 *x1,u8 *x2,u8 *x3,u8 *x4,u8 *x5,u8 *x6,u8 *x7,u8 *x8)
 {
@@ -25,12 +27,82 @@ uint8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 	return turn_direact;
 }
 
-int16_t track_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
+//int16_t track_read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
+//{
+//	int16_t err;
+//	err = 25*x1 + 10*x2 + 1*x3 + 0.5*x4 - 0.5*x5 - 1*x6 - 10*x7 - 25*x8;
+//	return err;
+//}
+
+
+void error_get(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
-	int16_t err;
-	err = 25*x1 + 10*x2 + 1*x3 + 0.5*x4 - 0.5*x5 - 1*x6 - 10*x7 - 25*x8;
-	return err;
+	int error1=100,error2=400,error3=700;	
+	if( x6 == 1 )
+	{
+		    left.now    -= error1;
+        right.now   += error1;
+	}
+	if( x3== 1 )
+	{
+        left.now   += error1;
+        right.now  -= error1;
+	}
+	if( x7 == 1 )
+	{
+        left.now    -= error2;
+        right.now   += error2;
+	}
+	if( x2 == 1 )
+	{
+        left.now    += error2;
+        right.now   -= error2;
+		
+	}
+	if( x8 == 1 )
+	{
+		    left.now    -= error3;
+        right.now   += error3;
+	}
+	if( x1 == 1 )
+	{
+        left.now   += error3;
+        right.now  -= error3;
+	}
 }
+
+void setspeed_pid(int *left_speed, int *right_speed)
+{
+	static u8 x1,x2,x3,x4,x5,x6,x7,x8;
+	deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
+	error_get(x1,x2,x3,x4,x5,x6,x7,x8);
+	if(left.sum >  1000000)left.sum=   10000;
+	if(left.sum < -1000000)left.sum=  -10000;
+
+	if(right.sum >   1000000)right.sum=  10000;
+	if(right.sum <  -1000000)right.sum= -10000;
+		
+    Velocity_PWM1 = basicspeed + Kp * right.now + Ki * right.sum + Kd * (right.now - right.last);
+    Velocity_PWM2 = basicspeed + Kp * left.now  + Ki * left.sum 	+ Kd * (left.now - left.last);	
+	
+//	encoder_A=Read_Encoder(4);
+//	encoder_B=Read_Encoder(2);  
+//	PWM1=Velocity_A(Velocity_PWM1,encoder_A);
+//	PWM2=Velocity_B(Velocity_PWM2,encoder_B);
+//	OLED_ShowSignedNum(8,  0,encoder_A,3,OLED_8X16);
+//	OLED_ShowSignedNum(8, 16,encoder_B, 3,OLED_8X16);
+//	OLED_ShowSignedNum(8, 32,PWM1, 6,OLED_8X16);
+//	OLED_ShowSignedNum(8, 48,PWM2, 6,OLED_8X16);
+//	OLED_Update();
+	*left_speed = Velocity_PWM1;
+	*right_speed = Velocity_PWM2;
+
+    left.last = left.now;
+    right.last = right.now;
+    left.now    = 0;
+    right.now = 0;
+}
+
 
 
 //检测现在位于黑线还是在白线上	Detection is now on the black line or on the white line

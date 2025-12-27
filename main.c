@@ -10,6 +10,8 @@ void RGB_Running_Effect(void);
 int direct;
 volatile bool left_forward = 0;
 volatile bool right_forward = 0;
+int left_speed = 0;
+int right_speed = 0;
 
 int main(void)
 {
@@ -39,11 +41,12 @@ int main(void)
 	
 	while (1)                
 	{
+		
 		// 读取红外传感器数据
 		static u8 x1,x2,x3,x4,x5,x6,x7,x8;
 		deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 		 
-		track_err = track_read(x1,x2,x3,x4,x5,x6,x7,x8); 
+//		track_err = track_read(x1,x2,x3,x4,x5,x6,x7,x8); 
 		direct = Direct_Read(x1,x2,x3,x4,x5,x6,x7,x8);
 		
 		// 显示循迹传感器状态（第一行：传感器1-4）
@@ -57,21 +60,21 @@ int main(void)
 		OLED_ShowNum(72, 16, x7, 1, 8, 1);
 		OLED_ShowNum(80, 16, x8, 1, 8, 1);
 		
-		// 显示循迹误差值
-		OLED_ShowString(0, 32, (uint8_t*)"Err:", 8, 1);
-		if(track_err >= 0) {
-			OLED_ShowString(32, 32, (uint8_t*)"+", 8, 1);
-			OLED_ShowNum(40, 32, track_err, 3, 8, 1);
-		} else {
-			OLED_ShowString(32, 32, (uint8_t*)"-", 8, 1);
-			OLED_ShowNum(40, 32, -track_err, 3, 8, 1);
-		}
+//		// 显示循迹误差值
+//		OLED_ShowString(0, 32, (uint8_t*)"Err:", 8, 1);
+//		if(track_err >= 0) {
+//			OLED_ShowString(32, 32, (uint8_t*)"+", 8, 1);
+//			OLED_ShowNum(40, 32, track_err, 3, 8, 1);
+//		} else {
+//			OLED_ShowString(32, 32, (uint8_t*)"-", 8, 1);
+//			OLED_ShowNum(40, 32, -track_err, 3, 8, 1);
+//		}
 		
 		// 显示 correction 和 direct
-		OLED_ShowString(0, 0, (uint8_t*)"Cor:", 8, 1);
-		OLED_ShowNum(32, 0, (int16_t)correction, 3, 8, 1);
-		OLED_ShowString(64, 0, (uint8_t*)"D:", 8, 1);
-		OLED_ShowNum(80, 0, direct, 2, 8, 1);
+//		OLED_ShowString(0, 0, (uint8_t*)"Cor:", 8, 1);
+//		OLED_ShowNum(32, 0, (int16_t)correction, 3, 8, 1);
+//		OLED_ShowString(64, 0, (uint8_t*)"D:", 8, 1);
+//		OLED_ShowNum(80, 0, direct, 2, 8, 1);
 		
 		
 		// 显示编码器值
@@ -86,32 +89,39 @@ int main(void)
 		if (direct == 0)
  		{
  			// direct为0：根据上一次的趋势继续转向
- 			if (last_target_L < last_target_R)  // 左转趋势
+ 			if (last_target_L > last_target_R)  // 左转趋势
  			{
-				Motor_Set(left_forward = 0, 274, right_forward = 1, 24);
-				//target_R = 40;
-				//target_L = 0;
-				
+				Motor_Set(left_forward = 0, 2500, right_forward = 1, 2500);
  			}
- 			else if(last_target_L > last_target_R)// 右转趋势
+ 			else if(last_target_L < last_target_R)// 右转趋势
  			{
-				Motor_Set(left_forward = 1, 24, right_forward = 0, 24);
-				//target_R = 0;
-				//target_L = 40;
+				Motor_Set(left_forward = 1, 2500, right_forward = 0, 2500);
  			}
+//			else  // 没有趋势时，直行
+//			{
+//				Motor_Set(1, 2500, 1, 2500);
+//			}
  		}
  		else
  		{ 
-		 Motor_Set(left_forward = 1, SPEED, right_forward = 1, SPEED);
-		 target_L = SPEED - correction;
-     target_R = SPEED + correction;
-		 // 限幅
-		 if (target_L < 0) target_L = 0;
-		 if (target_R < 0) target_R = 0;
-		 if (target_L > 68) target_L = 68;
-		 if (target_R > 68) target_R = 68;		
-    }
-		last_target_L = target_L;
-		last_target_R = target_R;
+		 setspeed_pid(&left_speed, &right_speed);
+		 // 使用PID计算出的速度驱动电机
+		 Motor_Set(1, left_speed, 1, right_speed);
+		}
+		last_target_L = left_speed;
+		last_target_R = right_speed;
+		 
+			
+//		 Motor_Set(left_forward = 1, SPEED, right_forward = 1, SPEED);
+//		 target_L = SPEED - correction;
+//     target_R = SPEED + correction;
+//		 // 限幅
+//		 if (target_L < 0) target_L = 0;
+//		 if (target_R < 0) target_R = 0;
+//		 if (target_L > 68) target_L = 68;
+//		 if (target_R > 68) target_R = 68;		
+//    }
+//		last_target_L = target_L;
+//		last_target_R = target_R;
 	}
 }

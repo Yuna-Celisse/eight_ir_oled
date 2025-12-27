@@ -263,80 +263,80 @@ PID TRACK_PID = {
     .limit_output = 100
 };
                       
-void pid_control_speed(int current, float target, PID *pid)
-{
-    pid->error = target - current;
-    pid->sum_error += pid->error;
+//void pid_control_speed(int current, float target, PID *pid)
+//{
+//    pid->error = target - current;
+//    pid->sum_error += pid->error;
 
-    if (pid->sum_error > pid->limit_sum_error)
-        pid->sum_error = pid->limit_sum_error;
-    else if (pid->sum_error < -pid->limit_sum_error)
-        pid->sum_error = -pid->limit_sum_error;
+//    if (pid->sum_error > pid->limit_sum_error)
+//        pid->sum_error = pid->limit_sum_error;
+//    else if (pid->sum_error < -pid->limit_sum_error)
+//        pid->sum_error = -pid->limit_sum_error;
 
-    pid->output = pid->KP * pid->error + pid->KI * pid->sum_error;
+//    pid->output = pid->KP * pid->error + pid->KI * pid->sum_error;
 
-    if (pid->output > pid->limit_output)
-        pid->output = pid->limit_output;
-    else if (pid->output < -pid->limit_output)
-        pid->output = -pid->limit_output;
+//    if (pid->output > pid->limit_output)
+//        pid->output = pid->limit_output;
+//    else if (pid->output < -pid->limit_output)
+//        pid->output = -pid->limit_output;
 
-    int pwm = (SPEED + pid->output)*125;
+//    int pwm = (SPEED + pid->output)*125;
 
-    // 限制PWM值范围
-    if (pwm < 0) pwm = 0;
-    if (pwm > 8500) pwm = 8500;
+//    // 限制PWM值范围
+//    if (pwm < 0) pwm = 0;
+//    if (pwm > 8500) pwm = 8500;
 
-    if (pid->L_or_R)
-    {
-        // 左电机控制 - 使用通道2和3
-        // 正转：通道3输出PWM，通道2输出0
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, pwm, DL_TIMER_CC_3_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
-    }
-    else
-    {
-        // 右电机控制 - 使用通道0和1  
-        // 正转：通道0输出PWM，通道1输出0
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, pwm, DL_TIMER_CC_0_INDEX);
-        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
-    }
-}
+//    if (pid->L_or_R)
+//    {
+//        // 左电机控制 - 使用通道2和3
+//        // 正转：通道3输出PWM，通道2输出0
+//        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, pwm, DL_TIMER_CC_3_INDEX);
+//        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_2_INDEX);
+//    }
+//    else
+//    {
+//        // 右电机控制 - 使用通道0和1  
+//        // 正转：通道0输出PWM，通道1输出0
+//        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, pwm, DL_TIMER_CC_0_INDEX);
+//        DL_TimerA_setCaptureCompareValue(motor_PWM_INST, 0, DL_TIMER_CC_1_INDEX);
+//    }
+//}
 
-float pid_control_track(int track_error, PID *pid)
-{
-    pid->error = track_error;
+//float pid_control_track(int track_error, PID *pid)
+//{
+//    pid->error = track_error;
 
-    // 小误差抑制（死区），避免积分在微小波动时累计
-    int abs_err = pid->error < 0 ? -pid->error : pid->error;
-    if (abs_err <= 2) {
-        pid->error = 0;
-    }
+//    // 小误差抑制（死区），避免积分在微小波动时累计
+//    int abs_err = pid->error < 0 ? -pid->error : pid->error;
+//    if (abs_err <= 2) {
+//        pid->error = 0;
+//    }
 
-    // 误差符号变化时，重置积分，提升响应性
-    if (pid->pre_error != 0 && (long)pid->pre_error * (long)pid->error < 0) {
-        pid->sum_error = 0;
-    }
+//    // 误差符号变化时，重置积分，提升响应性
+//    if (pid->pre_error != 0 && (long)pid->pre_error * (long)pid->error < 0) {
+//        pid->sum_error = 0;
+//    }
 
-    // 积分项累计并限幅
-    pid->sum_error += pid->error;
-    if (pid->sum_error > pid->limit_sum_error)
-        pid->sum_error = pid->limit_sum_error;
-    if (pid->sum_error < -pid->limit_sum_error)
-        pid->sum_error = -pid->limit_sum_error;
+//    // 积分项累计并限幅
+//    pid->sum_error += pid->error;
+//    if (pid->sum_error > pid->limit_sum_error)
+//        pid->sum_error = pid->limit_sum_error;
+//    if (pid->sum_error < -pid->limit_sum_error)
+//        pid->sum_error = -pid->limit_sum_error;
 
-    // 预计算输出，若饱和则进行反积分（抗风up）
-    float output = pid->KP * pid->error + pid->KI * pid->sum_error;
-    if (output > pid->limit_output || output < -pid->limit_output) {
-        // 撤销本次积分，避免继续“顶住”饱和
-        pid->sum_error -= pid->error;
-        // 重新计算并最终限幅
-        output = pid->KP * pid->error + pid->KI * pid->sum_error;
-    }
+//    // 预计算输出，若饱和则进行反积分（抗风up）
+//    float output = pid->KP * pid->error + pid->KI * pid->sum_error;
+//    if (output > pid->limit_output || output < -pid->limit_output) {
+//        // 撤销本次积分，避免继续“顶住”饱和
+//        pid->sum_error -= pid->error;
+//        // 重新计算并最终限幅
+//        output = pid->KP * pid->error + pid->KI * pid->sum_error;
+//    }
 
-    if (output > pid->limit_output) output = pid->limit_output;
-    if (output < -pid->limit_output) output = -pid->limit_output;
+//    if (output > pid->limit_output) output = pid->limit_output;
+//    if (output < -pid->limit_output) output = -pid->limit_output;
 
-    pid->pre_error = pid->error;
-    pid->output = output;
-    return output;
-}
+//    pid->pre_error = pid->error;
+//    pid->output = output;
+//    return output;
+//}
