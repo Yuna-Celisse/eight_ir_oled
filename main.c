@@ -109,9 +109,60 @@ int main(void)
 		
 		// 读取红外传感器数据
 		static u8 x1,x2,x3,x4,x5,x6,x7,x8;
+		static u8 white_detected[8] = {0};  // 记录每个传感器是否检测到白线
+		static u8 tick_count = 0;  // tick计数器
+		static u8 is_on_white = 0;  // 当前是否在白线上
+		static u8 white_line_count = 0;  // 检测到的白线条数
 		deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 //		track_err = track_read(x1,x2,x3,x4,x5,x6,x7,x8); 
 		direct = Direct_Read(x1,x2,x3,x4,x5,x6,x7,x8);
+		
+		// 在3个tick内累计检测白线
+		if (x1 == 1) white_detected[0] = 1;
+		if (x2 == 1) white_detected[1] = 1;
+		if (x3 == 1) white_detected[2] = 1;
+		if (x4 == 1) white_detected[3] = 1;
+		if (x5 == 1) white_detected[4] = 1;
+		if (x6 == 1) white_detected[5] = 1;
+		if (x7 == 1) white_detected[6] = 1;
+		if (x8 == 1) white_detected[7] = 1;
+		
+		tick_count++;
+		
+		// 检查是否所有传感器都检测到白线
+		if (tick_count >= 3)
+		{
+			if (white_detected[0] && white_detected[1] && white_detected[2] && white_detected[3] &&
+			    white_detected[4] && white_detected[5] && white_detected[6] && white_detected[7])
+			{
+				// 所有传感器都检测到白线
+				if (is_on_white == 0)
+				{
+					// 从黑线到白线的转换，增加计数并触发蜂鸣器
+					white_line_count++;
+					// 根据白线条数响相应次数的蜂鸣器
+					for (u8 i = 0; i < white_line_count; i++)
+					{
+						DL_GPIO_setPins(BEEP_PORT, BEEP_Buzzer_PIN);
+						delay_ms(50);
+						DL_GPIO_clearPins(BEEP_PORT, BEEP_Buzzer_PIN);
+						if (i < white_line_count - 1)  // 不是最后一次时加间隔
+						{
+							delay_ms(100);  // 两次蜂鸣之间的间隔
+						}
+					}
+				}
+				is_on_white = 1;  // 标记为在白线上
+			}
+			else
+			{
+				// 检测到黑线，更新状态但不触发蜂鸣器
+				is_on_white = 0;
+			}
+			// 重置检测状态
+			tick_count = 0;
+			for (int i = 0; i < 8; i++) white_detected[i] = 0;
+		}
 		
 		// 正计时显示（从0开始往上计数）
 		uint32_t sec = run_time_ms / 1000;
