@@ -18,12 +18,14 @@ typedef enum RGB_Color
     Yellow_RGB,
     Purple_RGB,    
     Cyan_RGB,
+    White_RGB,
     OFF    
 }RGB_Color_t;
 
 //void Control_RGB_ALL();
 void Control_RGB_ALL(RGB_Color_t color);
 void app_color();
+void RGB_LineTracking_Control(uint8_t line_detected);
 #endif
 
 

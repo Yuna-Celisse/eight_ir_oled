@@ -24,10 +24,12 @@
 #include "bsp_encoder.h"
 #include "bsp_timer.h"
 #include "bsp_motor.h"
+#include "bsp_RGB.h"
 
 #include "app_motor.h"
 #include "bsp_PID_motor.h"
 #include "app_irtracking_eight.h"
+#include "app_rgb.h"
 
 
 #endif

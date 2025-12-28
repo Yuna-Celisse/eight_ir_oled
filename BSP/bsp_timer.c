@@ -1,4 +1,5 @@
 #include "bsp_timer.h"
+#include "bsp_RGB.h"
 
 // 引入编码器结构体
 extern volatile ENCODER_RES motorL_encoder;
@@ -7,6 +8,9 @@ extern volatile ENCODER_RES motorR_encoder;
 extern int direct;
 // 引入系统运行状态
 extern volatile uint8_t system_running;
+// RGB状态变量
+volatile uint8_t g_rgb_line_detected = 0;
+extern unsigned char LedsArray[];
 
 float correction = 0;
 int16_t track_err;
@@ -40,6 +44,26 @@ void TIMER_20ms_INST_IRQHandler(void)
 		// 更新运行时间（10ms增量）
 		if (system_running) {
 			run_time_ms += 10;
+		}
+		
+		// RGB控制 - 每100ms更新一次
+		static uint8_t rgb_tick = 0;
+		if(++rgb_tick >= 10 && system_running) {  // 10*10ms = 100ms
+			rgb_tick = 0;
+			
+			// 保存GPIO配置并重新初始化RGB引脚
+			DL_GPIO_initDigitalOutput(IOMUX_PINCM27);
+			DL_GPIO_enableOutput(RGB_PORT, RGB_WQ2812_PIN);
+			
+			// 根据全局状态更新RGB
+			if(g_rgb_line_detected) {
+				LedsArray[0] = 0x00; LedsArray[1] = 0xff; LedsArray[2] = 0x00;
+				LedsArray[3] = 0x00; LedsArray[4] = 0xff; LedsArray[5] = 0x00;
+			} else {
+				LedsArray[0] = 0x00; LedsArray[1] = 0x00; LedsArray[2] = 0xff;
+				LedsArray[3] = 0x00; LedsArray[4] = 0x00; LedsArray[5] = 0xff;
+			}
+			rgb_SendArray();
 		}
 		
 ////		//编码器更新

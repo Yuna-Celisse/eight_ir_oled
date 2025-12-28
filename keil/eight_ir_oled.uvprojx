@@ -474,6 +474,11 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\bsp_key.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_RGB.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_RGB.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -161,11 +161,11 @@ int LineCheck(void)
 	//If a black line is detected
 	if(if_have >= 1) 
 	{
-		  return WHITE;
+		  return LINE_WHITE;
 	}
 	else
 	{
-		  return BLACK;
+		  return LINE_BLACK;
 	}
 }
 

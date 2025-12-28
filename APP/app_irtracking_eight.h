@@ -4,8 +4,8 @@
 
 #include "AllHeader.h"
 
-#define BLACK       1        //黑线black
-#define WHITE       0        //白线white
+#define LINE_BLACK       1        //黑线black
+#define LINE_WHITE       0        //白线white
 
 typedef struct {
 	int now;

@@ -1,41 +1,11 @@
 #include "app_rgb.h"
+#include "bsp_RGB.h"
 
-//RGB简单灯效
+// 外部数组声明
+extern unsigned char LedsArray[];
 
-// RGB功能需要额外的驱动文件支持
-// 如果没有RGB硬件或驱动，可以从项目中移除此文件
-
-// 颜色定义（如果有RGB驱动，这些应该在驱动头文件中定义）
-#define RED     0xFF0000
-#define GREEN   0x00FF00
-#define BLUE    0x0000FF
-#define YELLOW  0xFFFF00
-#define PURPLE  0xFF00FF
-#define CYAN    0x00FFFF
-#ifndef BLACK
-#define BLACK   0x000000
-#endif
-
-// 弱函数声明 - 如果没有实际的RGB驱动，这些函数不会做任何事
-__attribute__((weak)) void rgb_SetColor(unsigned char LedId, unsigned long color) {
-    // 空实现，如果没有RGB驱动
-    (void)LedId;
-    (void)color;
-}
-
-__attribute__((weak)) void rgb_SendArray(void) {
-    // 空实现，如果没有RGB驱动
-}
-
-// 定义ProtocolString数组（如果在其他地方已定义，可以删除此行）
-uint8_t ProtocolString[80] = {0}; // 协议字符串缓冲区
-
-static void set_ALL_RGB_COLOR(unsigned long color)
-{
-    rgb_SetColor(Left_RGB,color);
-    rgb_SetColor(Right_RGB,color);
-}
-
+// 定义ProtocolString数组
+uint8_t ProtocolString[80] = {0};
 
 void app_color()
 {
@@ -67,21 +37,25 @@ void Control_RGB_ALL(RGB_Color_t color)
 {
     switch(color)
     {
-        case    Red_RGB:     set_ALL_RGB_COLOR(RED);break;
-        case    Green_RGB:   set_ALL_RGB_COLOR(GREEN);break;
-        case    Blue_RGB:    set_ALL_RGB_COLOR(BLUE);break;
-        case    Yellow_RGB:  set_ALL_RGB_COLOR(YELLOW);break;
-        case    Purple_RGB:  set_ALL_RGB_COLOR(PURPLE); break;  
-        case    Cyan_RGB:    set_ALL_RGB_COLOR(CYAN);break;
-        case    OFF  :       set_ALL_RGB_COLOR(BLACK);break;
-        
-        default : return;
-        
+        case OFF:
+            for(int i = 0; i < WS2812_MAX * 3; i++) {
+                LedsArray[i] = 0;
+            }
+            break;
+        case Red_RGB:     set_ALL_RGB_COLOR(RED);break;
+        case Green_RGB:   set_ALL_RGB_COLOR(GREEN);break;
+        case Blue_RGB:    set_ALL_RGB_COLOR(BLUE);break;
+        case Yellow_RGB:  set_ALL_RGB_COLOR(YELLOW);break;
+        case Purple_RGB:  set_ALL_RGB_COLOR(PURPLE);break;  
+        case Cyan_RGB:    set_ALL_RGB_COLOR(CYAN);break;
+        case White_RGB:   set_ALL_RGB_COLOR(RGB_WHITE);break;
+        default: return;
     }
-    
-    rgb_SendArray();//必须发送,才显示
-    delay_ms(200);
-    
-    
+    rgb_SendArray();
+}
+
+void RGB_LineTracking_Control(uint8_t line_detected)
+{
+    Control_RGB_ALL(line_detected ? Red_RGB : Blue_RGB);
 }
 
