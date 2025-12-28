@@ -13,6 +13,11 @@ volatile bool right_forward = 0;
 int left_speed = 0;
 int right_speed = 0;
 
+// 按键启动控制相关变量
+volatile uint8_t system_running = 0;  // 系统运行标志：0-停止，1-运行
+// 移除了运行时间限制，可以无限制运行
+extern volatile uint32_t run_time_ms; // 在bsp_timer.c中定义
+
 int main(void)
 {
 	// 系统配置初始化  System configuration initialization
@@ -30,7 +35,10 @@ int main(void)
   
   // 初始显示
   OLED_Clear();
- // OLED_ShowString(0, 0, (uint8_t*)"Track Monitor", 8, 1);
+  OLED_ShowString(0, 0, (uint8_t*)"Press K1 Start", 8, 1);
+  OLED_ShowString(0, 16, (uint8_t*)"Status: STOP", 8, 1);
+  OLED_ShowString(0, 32, (uint8_t*)"GPIO:", 8, 1);
+  OLED_ShowString(0, 48, (uint8_t*)"K1:", 8, 1);
   OLED_Refresh();
 
 	uart0_send_string("$0,0,1#");
@@ -39,17 +47,86 @@ int main(void)
 	// 参数：左轮方向(true=前进), 左轮速度(0-10000), 右轮方向, 右轮速度
 	// Motor_Set(true, 5000, true, 5000);  // 两轮都以50%速度前进
 	
+	uint32_t loop_count = 0;
+	
 	while (1)                
 	{
+		loop_count++;
+		
+		// 显示GPIO原始值和按键状态用于调试
+		uint32_t gpio_raw = DL_GPIO_readPins(KEY_PORT, KEY_K1_PIN);
+		uint8_t raw_key = KEY_Read();
+		
+		if (system_running == 0)  // 只在停止状态刷新调试信息
+		{
+			OLED_ShowString(40, 32, (uint8_t*)"      ", 8, 1);
+			OLED_ShowNum(40, 32, gpio_raw, 5, 8, 1);
+			OLED_ShowString(32, 48, (uint8_t*)"   ", 8, 1);
+			OLED_ShowNum(32, 48, raw_key, 1, 8, 1);
+			OLED_Refresh();
+		}
+		
+		// 检测K1按键
+		uint8_t key_value = KEY_Scan();
+		if (key_value)
+		{
+			if (system_running == 0)
+			{
+				// 启动系统
+				system_running = 1;
+				run_time_ms = 0;  // 重置计时器
+				
+				// 清除OLED显示
+				OLED_Clear();
+				OLED_ShowString(0, 0, (uint8_t*)"Running...", 8, 1);
+				OLED_Refresh();
+				
+				// 蜂鸣器提示启动
+				DL_GPIO_setPins(BEEP_PORT, BEEP_Buzzer_PIN);
+				delay_ms(100);
+				DL_GPIO_clearPins(BEEP_PORT, BEEP_Buzzer_PIN);
+			}
+			else
+			{
+				// 停止系统
+				system_running = 0;
+				Motor_Set(0, 0, 0, 0);  // 停止电机
+				
+				OLED_Clear();
+				OLED_ShowString(0, 0, (uint8_t*)"Press K1 Start", 8, 1);
+				OLED_ShowString(0, 16, (uint8_t*)"Status: STOP", 8, 1);
+				OLED_Refresh();
+			}
+			delay_ms(200);  // 按键后延时，避免重复触发
+		}
+		
+		// 如果系统未运行，跳过后续处理
+		if (system_running == 0)
+		{
+			delay_ms(10);  // 短暂延时，避免CPU占用过高
+			continue;
+		}
 		
 		// 读取红外传感器数据
 		static u8 x1,x2,x3,x4,x5,x6,x7,x8;
 		deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
-		 
 //		track_err = track_read(x1,x2,x3,x4,x5,x6,x7,x8); 
 		direct = Direct_Read(x1,x2,x3,x4,x5,x6,x7,x8);
 		
-		// 显示循迹传感器状态（第一行：传感器1-4）
+		// 正计时显示（从0开始往上计数）
+		uint32_t sec = run_time_ms / 1000;
+		uint32_t ms = run_time_ms % 1000;
+		
+		// 显示时间（秒.毫秒）- 先清除整行
+		OLED_ShowString(0, 0, (uint8_t*)"                ", 8, 1);  // 清除整行
+		OLED_ShowString(0, 0, (uint8_t*)"T:", 8, 1);
+		OLED_ShowNum(16, 0, sec, 2, 8, 1);
+		OLED_ShowString(32, 0, (uint8_t*)".", 8, 1);
+		OLED_ShowNum(40, 0, ms, 3, 8, 1);
+		OLED_ShowString(64, 0, (uint8_t*)"s", 8, 1);
+		
+		// 显示循迹传感器状态 - 先清除整行
+		OLED_ShowString(0, 16, (uint8_t*)"                ", 8, 1);  // 清除整行
 		OLED_ShowString(0, 16, (uint8_t*)"IR:", 8, 1);
 		OLED_ShowNum(24, 16, x1, 1, 8, 1);
 		OLED_ShowNum(32, 16, x2, 1, 8, 1);
@@ -76,9 +153,12 @@ int main(void)
 //		OLED_ShowString(64, 0, (uint8_t*)"D:", 8, 1);
 //		OLED_ShowNum(80, 0, direct, 2, 8, 1);
 		
-		
-		// 显示编码器值
+		// 显示编码器值 - 清除旧内容
+		OLED_ShowString(88, 32, (uint8_t*)"       ", 8, 1);  // 清除
 		OLED_ShowString(88, 32, (uint8_t*)"L:", 8, 1);
+		OLED_ShowNum(104, 32, motorL_encoder.count, 3, 8, 1);
+		OLED_ShowString(88, 48, (uint8_t*)"       ", 8, 1);  // 清除
+		OLED_ShowString(88, 48, (uint8_t*)"R:", 8, 1);
 		OLED_ShowNum(104, 32, motorL_encoder.count, 3, 8, 1);
 		OLED_ShowString(88, 48, (uint8_t*)"R:", 8, 1);
 		OLED_ShowNum(104, 48, motorR_encoder.count, 3, 8, 1);

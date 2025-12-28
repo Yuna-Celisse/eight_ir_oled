@@ -147,6 +147,16 @@ extern "C" {
 /* Defines for MCU: GPIOA.17 with pinCMx 39 on package pin 10 */
 #define LED_MCU_PIN                                             (DL_GPIO_PIN_17)
 #define LED_MCU_IOMUX                                            (IOMUX_PINCM39)
+/* Port definition for Pin Group KEY */
+#define KEY_PORT                                                         (GPIOA)
+
+/* Defines for K1: GPIOA.18 with pinCMx 40 on package pin 11 */
+// pins affected by this interrupt request:["K1"]
+#define KEY_INT_IRQN                                            (GPIOA_INT_IRQn)
+#define KEY_INT_IIDX                            (DL_INTERRUPT_GROUP1_IIDX_GPIOA)
+#define KEY_K1_IIDX                                         (DL_GPIO_IIDX_DIO18)
+#define KEY_K1_PIN                                              (DL_GPIO_PIN_18)
+#define KEY_K1_IOMUX                                             (IOMUX_PINCM40)
 /* Port definition for Pin Group BEEP */
 #define BEEP_PORT                                                        (GPIOB)
 

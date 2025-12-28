@@ -119,16 +119,13 @@ void setspeed_pid(int *left_speed, int *right_speed)
     right.now = 0;
 }
 
-
-
-//检测现在位于黑线还是在白线上	Detection is now on the black line or on the white line
 int LineCheck(void)
 {
 	int if_have = 0;
     static u8 x1,x2,x3,x4,x5,x6,x7,x8;
 	deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 	//Traversing the grayscale sensor
-	if(!x1)  // 修改：当传感器为1时认为检测到黑线
+	if(!x1) 
 	{
 		if_have = 1;
 	}

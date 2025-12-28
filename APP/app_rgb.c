@@ -12,7 +12,9 @@
 #define YELLOW  0xFFFF00
 #define PURPLE  0xFF00FF
 #define CYAN    0x00FFFF
+#ifndef BLACK
 #define BLACK   0x000000
+#endif
 
 // 弱函数声明 - 如果没有实际的RGB驱动，这些函数不会做任何事
 __attribute__((weak)) void rgb_SetColor(unsigned char LedId, unsigned long color) {
@@ -25,7 +27,9 @@ __attribute__((weak)) void rgb_SendArray(void) {
     // 空实现，如果没有RGB驱动
 }
 
-extern uint8_t ProtocolString[80];//引入备份数据区 Introducing backup data area
+// 定义ProtocolString数组（如果在其他地方已定义，可以删除此行）
+uint8_t ProtocolString[80] = {0}; // 协议字符串缓冲区
+
 static void set_ALL_RGB_COLOR(unsigned long color)
 {
     rgb_SetColor(Left_RGB,color);

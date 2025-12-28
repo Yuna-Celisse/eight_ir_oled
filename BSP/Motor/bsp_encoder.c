@@ -159,6 +159,17 @@ void GROUP1_IRQHandler(void)
             DL_GPIO_clearInterruptStatus(GPIOA, GPIO_ENCODER_R_H2B_PIN);
         }
         
+        // 处理按键中断 (KEY_K1 也在 GPIOA 上)
+        gpio_status = DL_GPIO_getEnabledInterruptStatus(GPIOA, KEY_K1_PIN);
+        if(gpio_status & KEY_K1_PIN)
+        {
+            // 调用按键中断处理函数
+            extern void KEY_IRQ_Handler(void);
+            KEY_IRQ_Handler();
+            
+            // 清除按键中断标志
+            DL_GPIO_clearInterruptStatus(GPIOA, KEY_K1_PIN);
+        }
     }
     
 

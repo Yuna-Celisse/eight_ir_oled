@@ -5,6 +5,8 @@ extern volatile ENCODER_RES motorL_encoder;
 extern volatile ENCODER_RES motorR_encoder;
 // 引入转弯状态
 extern int direct;
+// 引入系统运行状态
+extern volatile uint8_t system_running;
 
 float correction = 0;
 int16_t track_err;
@@ -12,6 +14,9 @@ volatile int target_L;
 volatile int last_target_L;
 volatile int target_R;
 volatile int last_target_R;
+
+// 运行时间计时（毫秒）
+volatile uint32_t run_time_ms = 0;
 
 //10ms定时器
 void Timer_10ms_Init(void)
@@ -32,6 +37,11 @@ void TIMER_20ms_INST_IRQHandler(void)
     //10ms归零中断触发
 	if( DL_TimerA_getPendingInterrupt(TIMER_20ms_INST) == DL_TIMER_IIDX_ZERO )
 	{
+		// 更新运行时间（10ms增量）
+		if (system_running) {
+			run_time_ms += 10;
+		}
+		
 ////		//编码器更新
 		IRDataAnalysis();
 ////		encoder_update();

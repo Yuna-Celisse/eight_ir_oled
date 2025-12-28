@@ -371,3 +371,117 @@
 ////}
 
 
+// 简化的电机控制函数实现
+#include "app_motor.h"
+
+void Motor_Run(uint16_t left_speed, uint16_t right_speed)
+{
+    Motor_Set(true, left_speed, true, right_speed);
+}
+
+void Motor_Left(uint16_t left_speed, uint16_t right_speed)
+{
+    Motor_Set(false, left_speed, true, right_speed);
+}
+
+void Motor_Right(uint16_t left_speed, uint16_t right_speed)
+{
+    Motor_Set(true, left_speed, false, right_speed);
+}
+
+void Motor_Back(uint16_t left_speed, uint16_t right_speed)
+{
+    Motor_Set(false, left_speed, false, right_speed);
+}
+
+// 红外接收相关变量和函数
+static uint8_t infrared_command = 0xFF;
+
+uint8_t get_infrared_command(void)
+{
+    return infrared_command;
+}
+
+void clear_infrared_command(void)
+{
+    infrared_command = 0xFF;
+}
+
+// UART3发送函数
+void uart3_send_char(char ch)
+{
+    // 如果UART3未配置，这里是空实现
+    // 实际项目中需要根据硬件配置实现
+    (void)ch;
+}
+
+// Motion_Ctrl函数实现
+void Motion_Ctrl(int16_t V_x, int16_t V_y, int16_t V_z)
+{
+    // 简化实现：V_x是前进速度，V_z是转向调整
+    int16_t left_speed = V_x + V_z;
+    int16_t right_speed = V_x - V_z;
+    
+    // 限幅
+    if (left_speed > 1000) left_speed = 1000;
+    if (left_speed < -1000) left_speed = -1000;
+    if (right_speed > 1000) right_speed = 1000;
+    if (right_speed < -1000) right_speed = -1000;
+    
+    // 根据速度正负设置方向和速度
+    if (left_speed >= 0 && right_speed >= 0)
+        Motor_Set(true, (uint16_t)left_speed, true, (uint16_t)right_speed);
+    else if (left_speed < 0 && right_speed < 0)
+        Motor_Set(false, (uint16_t)(-left_speed), false, (uint16_t)(-right_speed));
+    else if (left_speed >= 0 && right_speed < 0)
+        Motor_Set(true, (uint16_t)left_speed, false, (uint16_t)(-right_speed));
+    else
+        Motor_Set(false, (uint16_t)(-left_speed), true, (uint16_t)right_speed);
+}
+
+// wheel_State函数实现
+void wheel_State(uint8_t state, uint16_t speed)
+{
+    switch(state)
+    {
+        case MOTION_RUN:
+            Motor_Run(speed, speed);
+            break;
+        case MOTION_BACK:
+            Motor_Back(speed, speed);
+            break;
+        case MOTION_LEFT:
+            Motor_Left(speed, speed);
+            break;
+        case MOTION_RIGHT:
+            Motor_Right(speed, speed);
+            break;
+        case MOTION_SPIN_LEFT:
+            Motor_Set(false, speed, true, speed);
+            break;
+        case MOTION_SPIN_RIGHT:
+            Motor_Set(true, speed, false, speed);
+            break;
+        case MOTION_STOP:
+        default:
+            Motor_Set(false, 0, false, 0);
+            break;
+    }
+}
+
+// Motion_Stop函数实现
+void Motion_Stop(uint8_t brake)
+{
+    Motor_Set(false, 0, false, 0);
+}
+
+// Motor_Stop函数实现（与Motion_Stop功能相同）
+void Motor_Stop(uint8_t brake)
+{
+    Motor_Set(false, 0, false, 0);
+}
+
+
+
+
+

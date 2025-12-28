@@ -17,7 +17,9 @@
 
 #include "bsp_beep_led.h"
 #include "bsp_ir.h"
+#include "bsp_key.h"
 #include "oled.h"
+#include "config.h"
 
 #include "bsp_encoder.h"
 #include "bsp_timer.h"

@@ -469,6 +469,11 @@
               <FileType>1</FileType>
               <FilePath>..\BSP\bsp_timer.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\bsp_key.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -488,6 +493,26 @@
               <FileName>app_irtracking_eight.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\APP\app_irtracking_eight.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_irremote.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\app_irremote.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_ir_track.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\app_ir_track.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_rgb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\app_rgb.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_speech.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\APP\app_speech.c</FilePath>
             </File>
           </Files>
         </Group>
