@@ -2,7 +2,7 @@
 
 int Velocity_PWM1,Velocity_PWM2;
 int basicspeed=2500;
-double Kp = 3.5, Ki = 2.5,Kd = 1.5;
+double Kp = 3.5, Ki = 0,Kd = 0;
 pid right  = {0,0,0};
 pid left    = {0,0,0};
 
@@ -20,10 +20,10 @@ void deal_IRdata(u8 *x1,u8 *x2,u8 *x3,u8 *x4,u8 *x5,u8 *x6,u8 *x7,u8 *x8)
 
 // 转弯控制函数 Turn control function
 // 返回值：1表示正在转弯，0表示不需要转弯
-uint8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
+int8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
 	int turn_direact = 0;
-	turn_direact = x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8;
+	turn_direact = x1  + x2 + x3  + x4 + x5 + x6 + x7 + x8;
 	return turn_direact;
 }
 
@@ -43,17 +43,18 @@ uint8_t Direct_Read(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 
 void error_get(u8 x1, u8 x2, u8 x3, u8 x4, u8 x5, u8 x6, u8 x7, u8 x8)
 {
-	int error0 = 15, error1=50,error2=225,error3=525;	
-	if( x5 == 1 )
-	{
-		left.now    -= error0;
-    right.now   += error0;
-	}
-	if( x4 == 1 )
-	{
-		left.now    += error0;
-    right.now   -= error0;
-	}
+//	int error0 = 50, 
+	int error1=50,error2=150,error3=500;	
+//	if( x5 == 1 )
+//	{
+//		left.now    -= error0;
+//    right.now   += error0;
+//	}
+//	if( x4 == 1 )
+//	{
+//		left.now    += error0;
+//    right.now   -= error0;
+//	}
 	if( x6 == 1 )
 	{
 		    left.now    -= error1;

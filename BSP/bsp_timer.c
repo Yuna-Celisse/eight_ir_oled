@@ -12,12 +12,18 @@ extern volatile uint8_t system_running;
 volatile uint8_t g_rgb_line_detected = 0;
 extern unsigned char LedsArray[];
 
-float correction = 0;
-int16_t track_err;
-volatile int target_L;
+//float correction = 0;
+//int16_t track_err;
+//volatile int target_L;
 volatile int last_target_L;
-volatile int target_R;
+//volatile int target_R;
 volatile int last_target_R;
+
+int direct;
+volatile bool left_forward = 0;
+volatile bool right_forward = 0;
+int left_speed = 0;
+int right_speed = 0;
 
 // 运行时间计时（毫秒）
 volatile uint32_t run_time_ms = 0;
@@ -42,29 +48,29 @@ void TIMER_20ms_INST_IRQHandler(void)
 	if( DL_TimerA_getPendingInterrupt(TIMER_20ms_INST) == DL_TIMER_IIDX_ZERO )
 	{
 		// 更新运行时间（10ms增量）
-		if (system_running) {
-			run_time_ms += 10;
-		}
-		
-		// RGB控制 - 每100ms更新一次
-		static uint8_t rgb_tick = 0;
-		if(++rgb_tick >= 10 && system_running) {  // 10*10ms = 100ms
-			rgb_tick = 0;
-			
-			// 保存GPIO配置并重新初始化RGB引脚
-			DL_GPIO_initDigitalOutput(IOMUX_PINCM27);
-			DL_GPIO_enableOutput(RGB_PORT, RGB_WQ2812_PIN);
-			
-			// 根据全局状态更新RGB
-			if(g_rgb_line_detected) {
-				LedsArray[0] = 0x00; LedsArray[1] = 0xff; LedsArray[2] = 0x00;
-				LedsArray[3] = 0x00; LedsArray[4] = 0xff; LedsArray[5] = 0x00;
-			} else {
-				LedsArray[0] = 0x00; LedsArray[1] = 0x00; LedsArray[2] = 0xff;
-				LedsArray[3] = 0x00; LedsArray[4] = 0x00; LedsArray[5] = 0xff;
-			}
-			rgb_SendArray();
-		}
+//		if (system_running) {
+//			run_time_ms += 10;
+//		}
+//		
+//		// RGB控制 - 每100ms更新一次
+//		static uint8_t rgb_tick = 0;
+//		if(++rgb_tick >= 10 && system_running) {  // 10*10ms = 100ms
+//			rgb_tick = 0;
+//			
+//			// 保存GPIO配置并重新初始化RGB引脚
+//			DL_GPIO_initDigitalOutput(IOMUX_PINCM27);
+//			DL_GPIO_enableOutput(RGB_PORT, RGB_WQ2812_PIN);
+//			
+//			// 根据全局状态更新RGB
+//			if(g_rgb_line_detected) {
+//				LedsArray[0] = 0x00; LedsArray[1] = 0xff; LedsArray[2] = 0x00;
+//				LedsArray[3] = 0x00; LedsArray[4] = 0xff; LedsArray[5] = 0x00;
+//			} else {
+//				LedsArray[0] = 0x00; LedsArray[1] = 0x00; LedsArray[2] = 0xff;
+//				LedsArray[3] = 0x00; LedsArray[4] = 0x00; LedsArray[5] = 0xff;
+//			}
+//			rgb_SendArray();
+//		}
 		
 ////		//编码器更新
 		IRDataAnalysis();
@@ -89,6 +95,32 @@ void TIMER_20ms_INST_IRQHandler(void)
 ////            pid_control_speed(encoder_right, target_R , &SPEED_PID_R);
 ////            pid_control_speed(encoder_left, target_L, &SPEED_PID_L);
 //        }
+
+		static u8 x1,x2,x3,x4,x5,x6,x7,x8;
+		deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
+		direct = Direct_Read(x1,x2,x3,x4,x5,x6,x7,x8);
+		if (direct == 0)
+		{
+			// 根据上次速度差判断转弯方向，并设置标志位
+			if (last_target_L < last_target_R)  // 左转
+			{
+				Motor_Set(0, 2000, 1, 2000);
+			}
+			else if (last_target_L > last_target_R)  // 右转
+			{
+				Motor_Set(1, 2000, 0, 2000);
+			}
+		}
+		// 正常循迹
+		else
+		{
+			setspeed_pid(&left_speed, &right_speed);
+			// 使用PID计算出的速度驱动电机
+			Motor_Set(1, left_speed, 1, right_speed);
+		}
+		last_target_L = left_speed;
+		last_target_R = right_speed;
+		
 		
 	}
 
