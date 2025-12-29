@@ -2,7 +2,7 @@
 
 int Velocity_PWM1,Velocity_PWM2;
 int basicspeed=2500;
-double Kp = 3.5, Ki = 0,Kd = 0;
+double Kp = 3.45, Ki = 0.515,Kd = 0.15;
 pid right  = {0,0,0};
 pid left    = {0,0,0};
 
@@ -93,11 +93,11 @@ void setspeed_pid(int *left_speed, int *right_speed)
 	static u8 x1,x2,x3,x4,x5,x6,x7,x8;
 	deal_IRdata(&x1,&x2,&x3,&x4,&x5,&x6,&x7,&x8);
 	error_get(x1,x2,x3,x4,x5,x6,x7,x8);
-	if(left.sum >  1000000)left.sum=   10000;
-	if(left.sum < -1000000)left.sum=  -10000;
-
-	if(right.sum >   1000000)right.sum=  10000;
-	if(right.sum <  -1000000)right.sum= -10000;
+	// I积分限幅，防止积分饱和
+	if(left.sum >  10000) left.sum = 10000;
+	if(left.sum < -10000) left.sum = -10000;
+	if(right.sum > 10000) right.sum = 10000;
+	if(right.sum < -10000) right.sum = -10000;
 		
     Velocity_PWM1 = basicspeed + Kp * right.now + Ki * right.sum + Kd * (right.now - right.last);
     Velocity_PWM2 = basicspeed + Kp * left.now  + Ki * left.sum 	+ Kd * (left.now - left.last);	

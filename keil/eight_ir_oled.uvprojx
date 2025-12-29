@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>__MSPM0G3507__</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\mspm0_sdk_2_08_00_03\source\third_party\CMSIS\Core\Include;..\..\mspm0_sdk_2_08_00_03\source;..\..\mspm0_sdk_2_08_00_03\source\ti\driverlib\m0p\sysctl;..\..\eight_ir_oled;..\BSP;..\BSP\OLED;..\BSP\Motor;..\APP</IncludePath>
+              <IncludePath>..\..\mspm0_sdk_2_08_00_03\source\third_party\CMSIS\Core\Include;..\..\mspm0_sdk_2_08_00_03\source;..\..\mspm0_sdk_2_08_00_03\source\ti\driverlib\m0p\sysctl;..\..\eight_ir_oled;..\BSP;..\BSP\OLED;..\BSP\Motor;..\APP;..\BSP\mpu6050;..\BSP\eMPL;..\BSP\kalman;..\BSP\filter</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -478,6 +478,36 @@
               <FileName>bsp_RGB.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\BSP\bsp_RGB.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_mpu6050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\mpu6050\bsp_mpu6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>get_mpu6050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\mpu6050\get_mpu6050.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\eMPL\inv_mpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>inv_mpu_dmp_motion_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\eMPL\inv_mpu_dmp_motion_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>kalman.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\kalman\kalman.c</FilePath>
+            </File>
+            <File>
+              <FileName>Filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\filter\Filter.c</FilePath>
             </File>
           </Files>
         </Group>

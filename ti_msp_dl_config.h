@@ -201,6 +201,16 @@ extern "C" {
 #define GPIO_ENCODER_R_H2B_PIN                                  (DL_GPIO_PIN_31)
 #define GPIO_ENCODER_R_H2B_IOMUX                                  (IOMUX_PINCM6)
 
+/* Port definition for Pin Group MPU6050 */
+#define MPU6050_PORT                                                     (GPIOA)
+
+/* Defines for SDA: GPIOA.0 with pinCMx 1 on package pin 33 */
+#define MPU6050_SDA_PIN                                          (DL_GPIO_PIN_0)
+#define MPU6050_SDA_IOMUX                                         (IOMUX_PINCM1)
+/* Defines for SCL: GPIOA.1 with pinCMx 2 on package pin 34 */
+#define MPU6050_SCL_PIN                                          (DL_GPIO_PIN_1)
+#define MPU6050_SCL_IOMUX                                         (IOMUX_PINCM2)
+
 
 
 /* clang-format on */

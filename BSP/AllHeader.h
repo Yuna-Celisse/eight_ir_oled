@@ -31,6 +31,14 @@
 #include "app_irtracking_eight.h"
 #include "app_rgb.h"
 
+// MPU6050陀螺仪相关
+#include "Kalman.h"
+#include "Filter.h"
+#include "inv_mpu.h"
+#include "inv_mpu_dmp_motion_driver.h"
+#include "bsp_mpu6050.h"
+#include "get_mpu6050.h"
+
 
 #endif
 
