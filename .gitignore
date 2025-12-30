@@ -70,3 +70,4 @@ device.lds.genlibs
 # Event recorder
 *.scvd
 EventRecorderStub.scvd
+keil/JLinkLog.txt
