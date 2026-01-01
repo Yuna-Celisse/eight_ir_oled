@@ -45,6 +45,8 @@ int encoder_right = 0;   // 右编码器每10ms增量值
 //10ms定时器中断
 void TIMER_10ms_INST_IRQHandler(void)
 {
+	DL_GPIO_setPins(Test_PORT, Test_PIN_0_PIN);  // 指示灯亮
+
     //10ms归零中断触发
 	if( DL_TimerA_getPendingInterrupt(TIMER_10ms_INST) == DL_TIMER_IIDX_ZERO )
 	{
@@ -55,6 +57,7 @@ void TIMER_10ms_INST_IRQHandler(void)
 		
 		// 只有系统运行时才执行循迹控制
 		if (system_running == 0) {
+			DL_TimerG_setTimerCount(TIMER_10ms_INST, TIMER_10ms_INST_LOAD_VALUE); // 重新加载计数器
 			return;  // 系统未运行，快速退出中断
 		}
 		
@@ -146,27 +149,51 @@ void TIMER_10ms_INST_IRQHandler(void)
 			}
 		}
 		last_line_detected = g_rgb_line_detected;
-		
+
+
+		int* check = LineCheck();
+		static uint8_t turn = 0;
+
+		if (*(check) >= 2 && *(check + 1) <= 1)
+		{
+			turn = 1;
+			// 左侧压线，左转
+			// Motor_Set(0, 1800, 1, 2000);
+		}	
+		else if (*(check + 1) >= 2 &&  *(check) <= 1)
+		{
+			turn = 2;
+			// Motor_Set(1, 2000, 0, 1800);
+		}
+
 		if (direct == 0)
 		{
-			// 根据上次速度差判断转弯方向，并设置标志位
-			if (last_target_L < last_target_R)  // 左转
+			if (1 == turn)
 			{
-				Motor_Set(0, 2000, 1, 2000);
+				Motor_Set(0, 1800, 1, 2000);
 			}
-			else if (last_target_L > last_target_R)  // 右转
+			else if (2 == turn)
 			{
-				Motor_Set(1, 2000, 0, 2000);
+				Motor_Set(1, 2000, 0, 1800);
+			}
+			else
+			{
+				setspeed_pid(&left_speed, &right_speed);
+				// 使用PID计算出的速度驱动电机
+				Motor_Set(1, left_speed, 1, right_speed);
 			}
 		}
-		// 正常循迹
 		else
 		{
 			setspeed_pid(&left_speed, &right_speed);
 			// 使用PID计算出的速度驱动电机
 			Motor_Set(1, left_speed, 1, right_speed);
 		}
+
 		last_target_L = left_speed;
 		last_target_R = right_speed;
+
+		DL_GPIO_clearPins(Test_PORT, Test_PIN_0_PIN);  // 指示灯亮
+
 	}
 }

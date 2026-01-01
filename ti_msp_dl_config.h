@@ -166,6 +166,12 @@ extern "C" {
 #define KEY_K1_IIDX                                         (DL_GPIO_IIDX_DIO18)
 #define KEY_K1_PIN                                              (DL_GPIO_PIN_18)
 #define KEY_K1_IOMUX                                             (IOMUX_PINCM40)
+/* Port definition for Pin Group Test */
+#define Test_PORT                                                        (GPIOB)
+
+/* Defines for PIN_0: GPIOB.0 with pinCMx 12 on package pin 47 */
+#define Test_PIN_0_PIN                                           (DL_GPIO_PIN_0)
+#define Test_PIN_0_IOMUX                                         (IOMUX_PINCM12)
 /* Port definition for Pin Group OLED */
 #define OLED_PORT                                                        (GPIOA)
 

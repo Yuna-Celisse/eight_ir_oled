@@ -16,6 +16,7 @@ const GPIO3   = GPIO.addInstance();
 const GPIO4   = GPIO.addInstance();
 const GPIO5   = GPIO.addInstance();
 const GPIO6   = GPIO.addInstance();
+const GPIO7   = GPIO.addInstance();
 const PWM     = scripting.addModule("/ti/driverlib/PWM", {}, false);
 const PWM1    = PWM.addInstance();
 const SYSCTL  = scripting.addModule("/ti/driverlib/SYSCTL");
@@ -123,6 +124,10 @@ GPIO6.associatedPins[0].internalResistor = "PULL_DOWN";
 GPIO6.associatedPins[0].polarity         = "RISE";
 GPIO6.associatedPins[0].pin.$assign      = "PA18";
 
+GPIO7.$name                         = "Test";
+GPIO7.associatedPins[0].$name       = "PIN_0";
+GPIO7.associatedPins[0].pin.$assign = "PB0";
+
 PWM1.$name                              = "motor_PWM";
 PWM1.clockDivider                       = 2;
 PWM1.ccIndex                            = [0,1,2,3];
@@ -166,8 +171,8 @@ TIMER1.timerClkPrescale   = 10;
 TIMER1.timerMode          = "PERIODIC";
 TIMER1.interrupts         = ["ZERO"];
 TIMER1.interruptPriority  = "2";
-TIMER1.timerPeriod        = "10 ms";
 TIMER1.$name              = "TIMER_10ms";
+TIMER1.timerPeriod        = "10 ms";
 TIMER1.peripheral.$assign = "TIMG6";
 
 UART1.$name                    = "UART_0";

@@ -137,6 +137,8 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 		 DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_DOWN,
 		 DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
 
+    DL_GPIO_initDigitalOutput(Test_PIN_0_IOMUX);
+
     DL_GPIO_initDigitalOutput(OLED_SCL_IOMUX);
 
     DL_GPIO_initDigitalOutput(OLED_SDA_IOMUX);
@@ -169,8 +171,10 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 		GPIO_ENCODER_R_H2B_PIN);
     DL_GPIO_enableInterrupt(GPIOA, KEY_K1_PIN |
 		GPIO_ENCODER_R_H2B_PIN);
-    DL_GPIO_clearPins(GPIOB, BEEP_Buzzer_PIN);
-    DL_GPIO_enableOutput(GPIOB, BEEP_Buzzer_PIN);
+    DL_GPIO_clearPins(GPIOB, BEEP_Buzzer_PIN |
+		Test_PIN_0_PIN);
+    DL_GPIO_enableOutput(GPIOB, BEEP_Buzzer_PIN |
+		Test_PIN_0_PIN);
     DL_GPIO_setLowerPinsPolarity(GPIOB, DL_GPIO_PIN_13_EDGE_RISE);
     DL_GPIO_setUpperPinsPolarity(GPIOB, DL_GPIO_PIN_21_EDGE_RISE |
 		DL_GPIO_PIN_22_EDGE_RISE);
