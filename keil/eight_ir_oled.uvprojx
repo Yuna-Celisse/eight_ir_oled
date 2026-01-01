@@ -72,7 +72,7 @@
           <BeforeMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>cmd.exe /C "$P../../tools/keil/syscfg.bat '$P' empty.syscfg"</UserProg1Name>
+            <UserProg1Name>cmd.exe /C "D:\TI\sysconfig_1.25.0\sysconfig_cli.bat -o "$P.." -s "D:\TI\mspm0_sdk_2_08_00_03\.metadata\product.json" --compiler keil "$P..\empty.syscfg""</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>

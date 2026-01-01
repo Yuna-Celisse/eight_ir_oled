@@ -33,9 +33,9 @@ volatile uint32_t run_time_ms = 0;
 void Timer_10ms_Init(void)
 {
     //打开10ms定时器
-    NVIC_ClearPendingIRQ(TIMER_20ms_INST_INT_IRQN);
-	  NVIC_EnableIRQ(TIMER_20ms_INST_INT_IRQN);
-		DL_TimerA_startCounter(TIMER_20ms_INST);
+    NVIC_ClearPendingIRQ(TIMER_10ms_INST_INT_IRQN);
+	  NVIC_EnableIRQ(TIMER_10ms_INST_INT_IRQN);
+		DL_TimerA_startCounter(TIMER_10ms_INST);
 }
 
 u8 gled_cnt = 0;
@@ -43,10 +43,10 @@ int encoder_left = 0;    // 左编码器每10ms增量值
 int encoder_right = 0;   // 右编码器每10ms增量值
 
 //10ms定时器中断
-void TIMER_20ms_INST_IRQHandler(void)
+void TIMER_10ms_INST_IRQHandler(void)
 {
     //10ms归零中断触发
-	if( DL_TimerA_getPendingInterrupt(TIMER_20ms_INST) == DL_TIMER_IIDX_ZERO )
+	if( DL_TimerA_getPendingInterrupt(TIMER_10ms_INST) == DL_TIMER_IIDX_ZERO )
 	{
 		// 更新运行时间（10ms增量）
 		if (system_running) {

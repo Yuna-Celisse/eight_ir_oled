@@ -80,6 +80,8 @@ extern "C" {
 #define GPIO_HFXOUT_IOMUX                                        (IOMUX_PINCM11)
 #define CPUCLK_FREQ                                                     80000000
 
+
+
 /* Defines for motor_PWM */
 #define motor_PWM_INST                                                     TIMA0
 #define motor_PWM_INST_IRQHandler                               TIMA0_IRQHandler
@@ -112,11 +114,11 @@ extern "C" {
 
 
 
-/* Defines for TIMER_20ms */
-#define TIMER_20ms_INST                                                  (TIMG6)
-#define TIMER_20ms_INST_IRQHandler                              TIMG6_IRQHandler
-#define TIMER_20ms_INST_INT_IRQN                                (TIMG6_INT_IRQn)
-#define TIMER_20ms_INST_LOAD_VALUE                                       (9999U)
+/* Defines for TIMER_10ms */
+#define TIMER_10ms_INST                                                  (TIMG6)
+#define TIMER_10ms_INST_IRQHandler                              TIMG6_IRQHandler
+#define TIMER_10ms_INST_INT_IRQN                                (TIMG6_INT_IRQn)
+#define TIMER_10ms_INST_LOAD_VALUE                                       (9999U)
 
 
 
@@ -147,22 +149,23 @@ extern "C" {
 /* Defines for MCU: GPIOA.17 with pinCMx 39 on package pin 10 */
 #define LED_MCU_PIN                                             (DL_GPIO_PIN_17)
 #define LED_MCU_IOMUX                                            (IOMUX_PINCM39)
-/* Port definition for Pin Group KEY */
-#define KEY_PORT                                                         (GPIOA)
-
-/* Defines for K1: GPIOA.18 with pinCMx 40 on package pin 11 */
-// pins affected by this interrupt request:["K1"]
-#define KEY_INT_IRQN                                            (GPIOA_INT_IRQn)
-#define KEY_INT_IIDX                            (DL_INTERRUPT_GROUP1_IIDX_GPIOA)
-#define KEY_K1_IIDX                                         (DL_GPIO_IIDX_DIO18)
-#define KEY_K1_PIN                                              (DL_GPIO_PIN_18)
-#define KEY_K1_IOMUX                                             (IOMUX_PINCM40)
 /* Port definition for Pin Group BEEP */
 #define BEEP_PORT                                                        (GPIOB)
 
 /* Defines for Buzzer: GPIOB.5 with pinCMx 18 on package pin 53 */
 #define BEEP_Buzzer_PIN                                          (DL_GPIO_PIN_5)
 #define BEEP_Buzzer_IOMUX                                        (IOMUX_PINCM18)
+/* Port definition for Pin Group KEY */
+#define KEY_PORT                                                         (GPIOA)
+
+/* Defines for K1: GPIOA.18 with pinCMx 40 on package pin 11 */
+// groups represented: ["GPIO_ENCODER_R","KEY"]
+// pins affected: ["H2B","K1"]
+#define GPIO_MULTIPLE_GPIOA_INT_IRQN                            (GPIOA_INT_IRQn)
+#define GPIO_MULTIPLE_GPIOA_INT_IIDX            (DL_INTERRUPT_GROUP1_IIDX_GPIOA)
+#define KEY_K1_IIDX                                         (DL_GPIO_IIDX_DIO18)
+#define KEY_K1_PIN                                              (DL_GPIO_PIN_18)
+#define KEY_K1_IOMUX                                             (IOMUX_PINCM40)
 /* Port definition for Pin Group OLED */
 #define OLED_PORT                                                        (GPIOA)
 
@@ -194,12 +197,10 @@ extern "C" {
 #define GPIO_ENCODER_R_H2A_IOMUX                                 (IOMUX_PINCM30)
 /* Defines for H2B: GPIOA.31 with pinCMx 6 on package pin 39 */
 #define GPIO_ENCODER_R_H2B_PORT                                          (GPIOA)
-// pins affected by this interrupt request:["H2B"]
-#define GPIO_ENCODER_R_GPIOA_INT_IRQN                           (GPIOA_INT_IRQn)
-#define GPIO_ENCODER_R_GPIOA_INT_IIDX           (DL_INTERRUPT_GROUP1_IIDX_GPIOA)
 #define GPIO_ENCODER_R_H2B_IIDX                             (DL_GPIO_IIDX_DIO31)
 #define GPIO_ENCODER_R_H2B_PIN                                  (DL_GPIO_PIN_31)
 #define GPIO_ENCODER_R_H2B_IOMUX                                  (IOMUX_PINCM6)
+
 
 
 
@@ -211,7 +212,7 @@ void SYSCFG_DL_GPIO_init(void);
 void SYSCFG_DL_SYSCTL_init(void);
 void SYSCFG_DL_SYSCTL_CLK_init(void);
 void SYSCFG_DL_motor_PWM_init(void);
-void SYSCFG_DL_TIMER_20ms_init(void);
+void SYSCFG_DL_TIMER_10ms_init(void);
 void SYSCFG_DL_UART_0_init(void);
 
 void SYSCFG_DL_SYSTICK_init(void);
