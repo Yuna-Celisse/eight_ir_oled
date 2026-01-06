@@ -5,18 +5,17 @@
 #include "delay.h"
 #include <stdint.h>
 
-#define WS2812_MAX        2   // LED灯珠总数
-#define WS2812_NUMBERS    2   // 灯珠个数
+#define WS2812_MAX        2
+#define WS2812_NUMBERS    2
 #define RGB_COLOR_COUNT (sizeof(rgbColors)/sizeof(rgbColors[0]))
 
-// 用户修改参数区 - 如果ti_msp_dl_config.h中没有定义RGB端口，请在syscfg中配置或手动定义
 #ifndef RGB_PORT
 #define RGB_PORT          GPIOB
 #define RGB_WQ2812_PIN    DL_GPIO_PIN_10
 #endif
 
-#define RGB_PIN_L()       DL_GPIO_clearPins(RGB_PORT, RGB_WQ2812_PIN)  // 控制彩灯引脚，需要根据为强推挽输出
-#define RGB_PIN_H()       DL_GPIO_setPins(RGB_PORT, RGB_WQ2812_PIN)    // 控制彩灯引脚，需要根据为强推挽输出
+#define RGB_PIN_L()       DL_GPIO_clearPins(RGB_PORT, RGB_WQ2812_PIN)
+#define RGB_PIN_H()       DL_GPIO_setPins(RGB_PORT, RGB_WQ2812_PIN)
 
 
 typedef struct {
@@ -27,7 +26,7 @@ typedef struct {
 
 extern unsigned int colorIndex;
 
-#define RED               0xff0000                  // 红色
+#define RED               0xff0000
 #define ORANGE            0xffa500                  // 橙色
 #define GREEN             0x00ff00                  // 绿色
 #define BLUE              0x0050ff                  // 蓝色（增加绿色分量提高亮度）

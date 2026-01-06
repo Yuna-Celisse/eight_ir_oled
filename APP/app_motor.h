@@ -5,11 +5,9 @@
 
 #include "AllHeader.h"
 
-// 45RPM电机，轮子转一整圈，编码器获得的脉冲数=减速比*码盘线数*编码器脉冲（45*13*2）  取近似值
-#define ENCODER_CIRCLE_450 (1170.0f)  
+#define ENCODER_CIRCLE_450 (1170.0f)
 
-// Half of the sum of the distances between the car chassis motors 小车底盘电机间距之和的一半
-#define MSPM0Car_APB (157.09f) //(143.8+170.38)/2
+#define MSPM0Car_APB (157.09f)
 
 // The displacement of a wheel in one complete revolution, measured in meters 轮子转一整圈的位移，单位为毫米
 #define MECANUM_CIRCLE_MM (210.486f)
@@ -63,18 +61,15 @@ void wheel_Ctrl(int16_t V_x, int16_t V_y, int16_t V_z);
 void Motion_Handle(void);
 void Motion_Car_Control(int16_t V_x, int16_t V_y, int16_t V_z);
 
-// 简化的电机控制函数
 void Motor_Run(uint16_t left_speed, uint16_t right_speed);
 void Motor_Left(uint16_t left_speed, uint16_t right_speed);
 void Motor_Right(uint16_t left_speed, uint16_t right_speed);
 void Motor_Back(uint16_t left_speed, uint16_t right_speed);
 void Motor_Stop(uint8_t brake);
 
-// 红外接收函数声明
 uint8_t get_infrared_command(void);
 void clear_infrared_command(void);
 
-// UART3发送函数声明
 void uart3_send_char(char ch);
 
 #endif

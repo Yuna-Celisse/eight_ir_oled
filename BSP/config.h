@@ -5,11 +5,10 @@
 #include "AllHeader.h"
 
 
-#define COMPILE_ENT 0  //编译环境,1:CCS 0:keil  此处和printf相关环境不对,无法打印
+#define COMPILE_ENT 0
 
-#define IRRMOTE (0) //红外遥控打开开关
+#define IRRMOTE (0)
 
-// IR Track GPIO定义 (根据实际硬件配置修改)
 #define IR_Track_PORT       GPIOB
 #define IR_Track_X1_PIN     DL_GPIO_PIN_0
 #define IR_Track_X2_PIN     DL_GPIO_PIN_1

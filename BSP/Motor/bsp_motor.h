@@ -14,6 +14,6 @@ typedef enum
 
 void Init_Motor_PWM(void);
 void Motor_Set(bool left_forward, uint16_t left_speed, bool right_forward, uint16_t right_speed);
-//void Motor_Stop(uint8_t brake);
+
 #endif
 

@@ -5,7 +5,6 @@
 #include "AllHeader.h"
 
 
-//播报词 Active broadcast content
 #define This_red 0x5F    
 #define This_blue 0x60
 #define This_green 0x61
